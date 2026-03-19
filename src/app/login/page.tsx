@@ -99,12 +99,12 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 rounded-md p-3">
+                <div role="alert" className="text-sm text-red-600 bg-red-50 rounded-md p-3">
                   {error}
                 </div>
               )}
               {message && (
-                <div className="text-sm text-green-600 bg-green-50 rounded-md p-3">
+                <div role="status" className="text-sm text-green-600 bg-green-50 rounded-md p-3">
                   {message}
                 </div>
               )}

@@ -127,7 +127,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-orange-100">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ChefHat className="h-7 w-7 text-orange-500" />
+            <ChefHat className="h-7 w-7 text-orange-500" aria-hidden="true" />
             <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-rose-600 bg-clip-text text-transparent">
               Lajoy Recipes
             </h1>
@@ -140,11 +140,11 @@ export default function HomePage() {
               }}
               className="bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white"
             >
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
               New Recipe
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
+            <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
+              <LogOut className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -154,20 +154,22 @@ export default function HomePage() {
         {/* Search and filters */}
         <div className="space-y-4 mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search recipes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 bg-white/60"
+              aria-label="Search recipes"
             />
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          <nav aria-label="Recipe categories" className="flex flex-wrap gap-1.5" role="group">
             {allTabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
+                aria-pressed={activeTab === tab}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
                   activeTab === tab
                     ? tab === "favorites"
@@ -191,7 +193,7 @@ export default function HomePage() {
                 )}
               </button>
             ))}
-          </div>
+          </nav>
         </div>
 
         {/* Recipe grid */}
@@ -221,7 +223,7 @@ export default function HomePage() {
                 }}
                 className="bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white"
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
                 Add First Recipe
               </Button>
             )}

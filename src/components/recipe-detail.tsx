@@ -48,7 +48,7 @@ export function RecipeDetail({ recipe, open, onOpenChange }: RecipeDetailProps) 
           <div className="flex gap-6 text-sm">
             {recipe.prep_time != null && (
               <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-orange-500" />
+                <Clock className="h-4 w-4 text-orange-500" aria-hidden="true" />
                 <span>
                   <strong>Prep:</strong> {recipe.prep_time} min
                 </span>
@@ -56,7 +56,7 @@ export function RecipeDetail({ recipe, open, onOpenChange }: RecipeDetailProps) 
             )}
             {recipe.cook_time != null && (
               <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-rose-500" />
+                <Clock className="h-4 w-4 text-rose-500" aria-hidden="true" />
                 <span>
                   <strong>Cook:</strong> {recipe.cook_time} min
                 </span>
@@ -69,7 +69,7 @@ export function RecipeDetail({ recipe, open, onOpenChange }: RecipeDetailProps) 
             )}
             {recipe.servings && (
               <div className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-amber-500" />
+                <Users className="h-4 w-4 text-amber-500" aria-hidden="true" />
                 <span>{recipe.servings} servings</span>
               </div>
             )}
@@ -86,7 +86,7 @@ export function RecipeDetail({ recipe, open, onOpenChange }: RecipeDetailProps) 
               <ul className="space-y-2">
                 {recipe.ingredients.map((ing, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-orange-400 mt-2 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-orange-400 mt-2 shrink-0" aria-hidden="true" />
                     <span>{ing}</span>
                   </li>
                 ))}

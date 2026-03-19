@@ -33,8 +33,12 @@ export function RecipeCard({
 
   return (
     <Card
-      className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 bg-white/70 backdrop-blur-sm overflow-hidden"
+      className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 bg-white/70 backdrop-blur-sm overflow-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onClick={() => onClick(recipe)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(recipe); } }}
+      tabIndex={0}
+      role="article"
+      aria-label={`Recipe: ${recipe.title}`}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
@@ -61,8 +65,10 @@ export function RecipeCard({
                 e.stopPropagation();
                 onToggleFavorite(recipe);
               }}
+              aria-label={recipe.is_favorite ? "Remove from favorites" : "Add to favorites"}
             >
               <Heart
+                aria-hidden="true"
                 className={`h-4 w-4 transition-colors ${
                   recipe.is_favorite
                     ? "fill-rose-500 text-rose-500"
@@ -72,10 +78,11 @@ export function RecipeCard({
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={(e) => e.stopPropagation()}
+                aria-label="Recipe options"
               >
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
@@ -84,7 +91,7 @@ export function RecipeCard({
                     onEdit(recipe);
                   }}
                 >
-                  <Pencil className="h-4 w-4 mr-2" />
+                  <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -94,7 +101,7 @@ export function RecipeCard({
                   }}
                   className="text-destructive"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -111,13 +118,13 @@ export function RecipeCard({
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           {totalTime && (
             <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
               {totalTime} min
             </span>
           )}
           {recipe.servings && (
             <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
               {recipe.servings} servings
             </span>
           )}

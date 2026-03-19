@@ -135,7 +135,7 @@ export function RecipeForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">
             {recipe ? "Edit Recipe" : "New Recipe"} {categoryEmojis[category]}
@@ -235,7 +235,7 @@ export function RecipeForm({
                 size="sm"
                 onClick={addIngredient}
               >
-                <Plus className="h-4 w-4 mr-1" /> Add
+                <Plus className="h-4 w-4 mr-1" aria-hidden="true" /> Add
               </Button>
             </div>
             {ingredients.map((ing, i) => (
@@ -244,6 +244,7 @@ export function RecipeForm({
                   placeholder={`Ingredient ${i + 1}...`}
                   value={ing}
                   onChange={(e) => updateIngredient(i, e.target.value)}
+                  aria-label={`Ingredient ${i + 1}`}
                 />
                 {ingredients.length > 1 && (
                   <Button
@@ -252,8 +253,9 @@ export function RecipeForm({
                     size="icon"
                     onClick={() => removeIngredient(i)}
                     className="text-muted-foreground hover:text-destructive shrink-0"
+                    aria-label={`Remove ingredient ${i + 1}`}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 )}
               </div>
@@ -270,7 +272,7 @@ export function RecipeForm({
                 size="sm"
                 onClick={addInstruction}
               >
-                <Plus className="h-4 w-4 mr-1" /> Add Step
+                <Plus className="h-4 w-4 mr-1" aria-hidden="true" /> Add Step
               </Button>
             </div>
             {instructions.map((step, i) => (
@@ -284,6 +286,7 @@ export function RecipeForm({
                   onChange={(e) => updateInstruction(i, e.target.value)}
                   rows={2}
                   className="flex-1"
+                  aria-label={`Instruction step ${i + 1}`}
                 />
                 {instructions.length > 1 && (
                   <Button
@@ -292,8 +295,9 @@ export function RecipeForm({
                     size="icon"
                     onClick={() => removeInstruction(i)}
                     className="text-muted-foreground hover:text-destructive shrink-0"
+                    aria-label={`Remove step ${i + 1}`}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 )}
               </div>
