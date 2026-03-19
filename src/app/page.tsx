@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeCard } from "@/components/recipe-card";
 import { RecipeForm } from "@/components/recipe-form";
 import { RecipeDetail } from "@/components/recipe-detail";
@@ -30,6 +29,8 @@ const allCategories: RecipeCategory[] = [
   "drink",
 ];
 
+const allTabs = ["all", "favorites", ...allCategories];
+
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ export default function HomePage() {
   const [viewingRecipe, setViewingRecipe] = useState<Recipe | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchRecipes = useCallback(async () => {
     const { data, error } = await supabase
@@ -162,29 +163,35 @@ export default function HomePage() {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-white/60 flex-wrap h-auto gap-1 p-1">
-              <TabsTrigger value="all" className="data-[state=active]:bg-orange-100">
-                All
-              </TabsTrigger>
-              <TabsTrigger
-                value="favorites"
-                className="data-[state=active]:bg-rose-100"
+          <div className="flex flex-wrap gap-1.5">
+            {allTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
+                  activeTab === tab
+                    ? tab === "favorites"
+                      ? "bg-rose-100 text-rose-700 shadow-sm"
+                      : "bg-orange-100 text-orange-700 shadow-sm"
+                    : "bg-white/60 text-muted-foreground hover:bg-white hover:text-foreground"
+                }`}
               >
-                <Heart className="h-3.5 w-3.5 mr-1" />
-                Favorites
-              </TabsTrigger>
-              {allCategories.map((cat) => (
-                <TabsTrigger
-                  key={cat}
-                  value={cat}
-                  className="data-[state=active]:bg-orange-100"
-                >
-                  {categoryEmojis[cat]} {categoryLabels[cat]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                {tab === "all" ? (
+                  "All"
+                ) : tab === "favorites" ? (
+                  <>
+                    <Heart className="h-3.5 w-3.5" />
+                    Favorites
+                  </>
+                ) : (
+                  <>
+                    {categoryEmojis[tab as RecipeCategory]}{" "}
+                    {categoryLabels[tab as RecipeCategory]}
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Recipe grid */}
