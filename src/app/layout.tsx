@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "La Joy Recipes",
+  title: "Lajoy Recipes",
   description: "Your personal recipe collection - from bakery treats to dinner dishes",
 };
 

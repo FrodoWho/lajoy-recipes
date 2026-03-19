@@ -128,7 +128,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <ChefHat className="h-7 w-7 text-orange-500" />
             <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-rose-600 bg-clip-text text-transparent">
-              La Joy Recipes
+              Lajoy Recipes
             </h1>
           </div>
           <div className="flex items-center gap-2">

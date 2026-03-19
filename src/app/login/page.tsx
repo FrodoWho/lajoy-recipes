@@ -59,7 +59,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="text-6xl mb-3">{"\uD83D\uDC69\u200D\uD83C\uDF73"}</div>
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-orange-600 to-rose-600 bg-clip-text text-transparent">
-            La Joy Recipes
+            Lajoy Recipes
           </h1>
           <p className="text-muted-foreground mt-2">
             Your personal recipe collection
