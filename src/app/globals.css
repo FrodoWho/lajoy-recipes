@@ -9,7 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
-  --font-heading: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-heading), ui-serif, Georgia, serif;
+  --font-label: var(--font-label), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -46,75 +47,96 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Sunlit Atelier design tokens */
+  --color-surface: #fff8f1;
+  --color-surface-dim: #dfd9d2;
+  --color-surface-container: #f3ede6;
+  --color-surface-container-low: #f9f3eb;
+  --color-surface-container-high: #eee7e0;
+  --color-surface-container-highest: #e8e1da;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface: #1d1b17;
+  --color-on-surface-variant: #4b4737;
+  --color-primary-container: #f9e076;
+  --color-on-primary-container: #746200;
+  --color-secondary-lajoy: #68548d;
+  --color-secondary-container: #d6beff;
+  --color-on-secondary-container: #5d4a82;
+  --color-outline: #7d7765;
+  --color-outline-variant: #cec6b2;
+  --color-primary-fixed-dim: #dec65f;
+  --color-error-lajoy: #ba1a1a;
+  --color-error-container: #ffdad6;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.6 0.2 30);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #fff8f1;
+  --foreground: #1d1b17;
+  --card: #f9f3eb;
+  --card-foreground: #1d1b17;
+  --popover: #fff8f1;
+  --popover-foreground: #1d1b17;
+  --primary: #6e5d00;
+  --primary-foreground: #ffffff;
+  --secondary: #68548d;
+  --secondary-foreground: #ffffff;
+  --muted: #f3ede6;
+  --muted-foreground: #7d7765;
+  --accent: #f9e076;
+  --accent-foreground: #1d1b17;
+  --destructive: #ba1a1a;
+  --border: #cec6b2;
+  --input: #e8e1da;
+  --ring: #6e5d00;
+  --chart-1: #6e5d00;
+  --chart-2: #68548d;
+  --chart-3: #f9e076;
+  --chart-4: #d6beff;
+  --chart-5: #635e53;
+  --radius: 0.75rem;
+  --sidebar: #f9f3eb;
+  --sidebar-foreground: #1d1b17;
+  --sidebar-primary: #6e5d00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f9e076;
+  --sidebar-accent-foreground: #1d1b17;
+  --sidebar-border: #cec6b2;
+  --sidebar-ring: #6e5d00;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #1d1b17;
+  --foreground: #e8e1da;
+  --card: #2a2720;
+  --card-foreground: #e8e1da;
+  --popover: #1d1b17;
+  --popover-foreground: #e8e1da;
+  --primary: #dec65f;
+  --primary-foreground: #3a3000;
+  --secondary: #d3bcfc;
+  --secondary-foreground: #3a2660;
+  --muted: #33302b;
+  --muted-foreground: #9e9788;
+  --accent: #534600;
+  --accent-foreground: #f9e076;
+  --destructive: #ffb4ab;
+  --border: #4b4737;
+  --input: #4b4737;
+  --ring: #dec65f;
+  --chart-1: #dec65f;
+  --chart-2: #d3bcfc;
+  --chart-3: #534600;
+  --chart-4: #503d73;
+  --chart-5: #cdc6b8;
+  --sidebar: #2a2720;
+  --sidebar-foreground: #e8e1da;
+  --sidebar-primary: #dec65f;
+  --sidebar-primary-foreground: #3a3000;
+  --sidebar-accent: #534600;
+  --sidebar-accent-foreground: #f9e076;
+  --sidebar-border: #4b4737;
+  --sidebar-ring: #dec65f;
 }
 
 @layer base {
@@ -127,4 +149,37 @@
   html {
     @apply font-sans;
   }
+  button,
+  [role="button"],
+  a,
+  select,
+  [type="button"],
+  [type="submit"] {
+    cursor: pointer;
+  }
+}
+
+/* Ensure focus ring visibility for accessibility */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  ring: 2px solid var(--ring);
+}
+
+/* Glass nav effect */
+.glass-nav {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
 }

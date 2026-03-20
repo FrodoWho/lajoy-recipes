@@ -2,22 +2,14 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/recipe-card";
-import { RecipeForm } from "@/components/recipe-form";
-import { RecipeDetail } from "@/components/recipe-detail";
+import { NavBar } from "@/components/nav-bar";
+import { Footer } from "@/components/footer";
 import { Toaster, toast } from "sonner";
-import {
-  Plus,
-  Search,
-  LogOut,
-  ChefHat,
-  Heart,
-} from "lucide-react";
 import type { Recipe, RecipeCategory } from "@/lib/types";
-import { categoryEmojis, categoryLabels } from "@/lib/types";
+import { categoryLabels } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const allCategories: RecipeCategory[] = [
   "bakery",
@@ -29,17 +21,13 @@ const allCategories: RecipeCategory[] = [
   "drink",
 ];
 
-const allTabs = ["all", "favorites", ...allCategories];
+const allTabs = ["all", ...allCategories];
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
-  const [viewingRecipe, setViewingRecipe] = useState<Recipe | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
@@ -97,14 +85,8 @@ export default function HomePage() {
     }
   }
 
-  function handleEdit(recipe: Recipe) {
-    setEditingRecipe(recipe);
-    setFormOpen(true);
-  }
-
   function handleView(recipe: Recipe) {
-    setViewingRecipe(recipe);
-    setDetailOpen(true);
+    router.push(`/recipes/${recipe.id}`);
   }
 
   const filtered = recipes.filter((r) => {
@@ -113,155 +95,136 @@ export default function HomePage() {
       r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.description?.toLowerCase().includes(search.toLowerCase());
     const matchesTab =
-      activeTab === "all" ||
-      (activeTab === "favorites" && r.is_favorite) ||
-      r.category === activeTab;
+      activeTab === "all" || r.category === activeTab;
     return matchesSearch && matchesTab;
   });
 
+  const totalRecipes = recipes.length;
+  const favoriteCount = recipes.filter((r) => r.is_favorite).length;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50">
+    <div className="min-h-screen bg-surface flex flex-col">
       <Toaster position="top-center" richColors />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-orange-100">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ChefHat className="h-7 w-7 text-orange-500" aria-hidden="true" />
-            <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-rose-600 bg-clip-text text-transparent">
-              Lajoy Recipes
+      <NavBar onSignOut={handleSignOut} />
+
+      <main id="main-content" className="pt-28 pb-20 px-6 max-w-7xl mx-auto w-full flex-grow">
+        {/* Header & Stats */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-6 md:gap-8">
+          <div className="space-y-2">
+            <span className="font-label text-secondary-lajoy tracking-widest uppercase text-xs">
+              Your Curated Collection
+            </span>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading font-bold text-on-surface tracking-tight">
+              My Recipes
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                setEditingRecipe(null);
-                setFormOpen(true);
-              }}
-              className="bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white"
+          <div className="flex flex-wrap gap-8 md:gap-12 items-center">
+            <div className="text-center">
+              <p className="text-3xl font-heading font-bold text-primary">{totalRecipes}</p>
+              <p className="font-label text-xs uppercase tracking-widest text-outline">
+                Total Recipes
+              </p>
+            </div>
+            <div className="text-center border-l border-outline-variant/20 pl-8 md:pl-12">
+              <p className="text-3xl font-heading font-bold text-secondary-lajoy">{favoriteCount}</p>
+              <p className="font-label text-xs uppercase tracking-widest text-outline">
+                Favorites
+              </p>
+            </div>
+            <Link
+              href="/recipes/new"
+              className="bg-primary text-white px-8 py-4 rounded-full font-label font-medium flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/10"
             >
-              <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
-              New Recipe
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-            </Button>
+              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              Add New Recipe
+            </Link>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Search and filters */}
-        <div className="space-y-4 mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            <Input
+        {/* Search (mobile) */}
+        <div className="mb-8 sm:hidden">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" aria-hidden="true">
+              search
+            </span>
+            <input
+              className="w-full bg-surface-container-highest rounded-full py-3 pl-10 pr-4 text-sm border-none focus:ring-2 focus:ring-primary font-label outline-none"
               placeholder="Search recipes..."
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-white/60"
               aria-label="Search recipes"
             />
           </div>
-
-          <nav aria-label="Recipe categories" className="flex flex-wrap gap-1.5" role="group">
-            {allTabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                aria-pressed={activeTab === tab}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
-                  activeTab === tab
-                    ? tab === "favorites"
-                      ? "bg-rose-100 text-rose-700 shadow-sm"
-                      : "bg-orange-100 text-orange-700 shadow-sm"
-                    : "bg-white/60 text-muted-foreground hover:bg-white hover:text-foreground"
-                }`}
-              >
-                {tab === "all" ? (
-                  "All"
-                ) : tab === "favorites" ? (
-                  <>
-                    <Heart className="h-3.5 w-3.5" />
-                    Favorites
-                  </>
-                ) : (
-                  <>
-                    {categoryEmojis[tab as RecipeCategory]}{" "}
-                    {categoryLabels[tab as RecipeCategory]}
-                  </>
-                )}
-              </button>
-            ))}
-          </nav>
         </div>
 
-        {/* Recipe grid */}
+        {/* Filter Chips */}
+        <nav aria-label="Recipe categories" className="mb-12 flex flex-wrap gap-3">
+          {allTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              aria-pressed={activeTab === tab}
+              className={`px-6 py-2 rounded-full font-label text-sm transition-colors ${
+                activeTab === tab
+                  ? "bg-primary-container text-on-primary-container font-semibold"
+                  : "bg-surface-container-highest text-on-surface-variant hover:bg-secondary-container/30"
+              }`}
+            >
+              {tab === "all" ? "All" : categoryLabels[tab as RecipeCategory]}
+            </button>
+          ))}
+        </nav>
+
+        {/* Recipe Grid */}
         {loading ? (
-          <div className="text-center py-20">
-            <div className="text-4xl animate-bounce">{"\uD83C\uDF73"}</div>
-            <p className="text-muted-foreground mt-2">Loading recipes...</p>
+          <div className="text-center py-20" aria-live="polite" role="status">
+            <span className="material-symbols-outlined text-5xl text-primary-container animate-pulse" aria-hidden="true">
+              skillet
+            </span>
+            <p className="text-on-surface-variant mt-4 font-label">Loading recipes...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">{"\uD83C\uDF7D\uFE0F"}</div>
-            <h2 className="text-xl font-semibold mb-2">
-              {recipes.length === 0
-                ? "No recipes yet!"
-                : "No recipes found"}
+            <span className="material-symbols-outlined text-6xl text-outline-variant mb-4" aria-hidden="true">
+              menu_book
+            </span>
+            <h2 className="text-xl font-heading font-semibold mb-2 text-on-surface">
+              {recipes.length === 0 ? "No recipes yet!" : "No recipes found"}
             </h2>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-on-surface-variant mb-6 font-label">
               {recipes.length === 0
                 ? "Start by adding your first recipe"
                 : "Try a different search or category"}
             </p>
             {recipes.length === 0 && (
-              <Button
-                onClick={() => {
-                  setEditingRecipe(null);
-                  setFormOpen(true);
-                }}
-                className="bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white"
+              <Link
+                href="/recipes/new"
+                className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-label font-medium hover:opacity-90 transition-all"
               >
-                <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
+                <span className="material-symbols-outlined" aria-hidden="true">add</span>
                 Add First Recipe
-              </Button>
+              </Link>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((recipe) => (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.map((recipe, index) => (
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
-                onEdit={handleEdit}
                 onDelete={handleDelete}
                 onToggleFavorite={handleToggleFavorite}
                 onClick={handleView}
+                featured={index === 0}
               />
             ))}
-          </div>
+          </section>
         )}
       </main>
 
-      {/* Recipe Form Dialog */}
-      <RecipeForm
-        key={editingRecipe?.id ?? "new"}
-        open={formOpen}
-        onOpenChange={(open) => {
-          setFormOpen(open);
-          if (!open) setEditingRecipe(null);
-        }}
-        onSaved={fetchRecipes}
-        recipe={editingRecipe}
-      />
-
-      {/* Recipe Detail Sheet */}
-      <RecipeDetail
-        recipe={viewingRecipe}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
+      <Footer />
     </div>
   );
 }

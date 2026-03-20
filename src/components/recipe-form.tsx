@@ -2,27 +2,15 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Recipe, RecipeCategory } from "@/lib/types";
-import { categoryEmojis, categoryLabels } from "@/lib/types";
+import { categoryLabels } from "@/lib/types";
 
 interface RecipeFormProps {
   open: boolean;
@@ -135,92 +123,102 @@ export function RecipeForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-surface">
         <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {recipe ? "Edit Recipe" : "New Recipe"} {categoryEmojis[category]}
+          <DialogTitle className="text-2xl font-heading">
+            {recipe ? "Edit Recipe" : "New Recipe"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="title">Recipe Title *</Label>
-              <Input
-                id="title"
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-title">
+                Recipe Title *
+              </label>
+              <input
+                id="edit-title"
                 placeholder="Grandma's chocolate cake..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="text-lg"
+                className="w-full text-lg font-heading bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-desc">
+                Description
+              </label>
+              <textarea
+                id="edit-desc"
                 placeholder="A short description of this delicious recipe..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={2}
+                className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-sans"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Category *</Label>
-              <Select
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block">
+                Category *
+              </label>
+              <select
                 value={category}
-                onValueChange={(v) => setCategory(v as RecipeCategory)}
+                onChange={(e) => setCategory(e.target.value as RecipeCategory)}
+                className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(
-                    Object.keys(categoryEmojis) as RecipeCategory[]
-                  ).map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {categoryEmojis[cat]} {categoryLabels[cat]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {(Object.keys(categoryLabels) as RecipeCategory[]).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {categoryLabels[cat]}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="servings">Servings</Label>
-              <Input
-                id="servings"
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-servings">
+                Servings
+              </label>
+              <input
+                id="edit-servings"
                 type="number"
                 min="1"
                 placeholder="4"
                 value={servings}
                 onChange={(e) => setServings(e.target.value)}
+                className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prep">Prep Time (min)</Label>
-              <Input
-                id="prep"
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-prep">
+                Prep Time (min)
+              </label>
+              <input
+                id="edit-prep"
                 type="number"
                 min="0"
                 placeholder="15"
                 value={prepTime}
                 onChange={(e) => setPrepTime(e.target.value)}
+                className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cook">Cook Time (min)</Label>
-              <Input
-                id="cook"
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-cook">
+                Cook Time (min)
+              </label>
+              <input
+                id="edit-cook"
                 type="number"
                 min="0"
                 placeholder="30"
                 value={cookTime}
                 onChange={(e) => setCookTime(e.target.value)}
+                className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
               />
             </div>
           </div>
@@ -228,35 +226,33 @@ export function RecipeForm({
           {/* Ingredients */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Ingredients</Label>
-              <Button
+              <label className="font-heading text-lg">Ingredients</label>
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={addIngredient}
+                className="font-label text-xs uppercase tracking-widest text-secondary-lajoy flex items-center gap-1 hover:opacity-70 transition-opacity"
               >
-                <Plus className="h-4 w-4 mr-1" aria-hidden="true" /> Add
-              </Button>
+                <span className="material-symbols-outlined text-sm">add</span> Add
+              </button>
             </div>
             {ingredients.map((ing, i) => (
               <div key={i} className="flex gap-2">
-                <Input
+                <input
                   placeholder={`Ingredient ${i + 1}...`}
                   value={ing}
                   onChange={(e) => updateIngredient(i, e.target.value)}
                   aria-label={`Ingredient ${i + 1}`}
+                  className="flex-1 bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
                 />
                 {ingredients.length > 1 && (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
                     onClick={() => removeIngredient(i)}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
+                    className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0 px-2"
                     aria-label={`Remove ingredient ${i + 1}`}
                   >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </Button>
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
                 )}
               </div>
             ))}
@@ -265,71 +261,71 @@ export function RecipeForm({
           {/* Instructions */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Instructions</Label>
-              <Button
+              <label className="font-heading text-lg">Instructions</label>
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={addInstruction}
+                className="font-label text-xs uppercase tracking-widest text-secondary-lajoy flex items-center gap-1 hover:opacity-70 transition-opacity"
               >
-                <Plus className="h-4 w-4 mr-1" aria-hidden="true" /> Add Step
-              </Button>
+                <span className="material-symbols-outlined text-sm">add</span> Add Step
+              </button>
             </div>
             {instructions.map((step, i) => (
-              <div key={i} className="flex gap-2">
-                <span className="flex items-center justify-center w-8 h-10 rounded-full bg-orange-100 text-orange-700 font-bold text-sm shrink-0">
-                  {i + 1}
+              <div key={i} className="flex gap-3">
+                <span className="flex items-center justify-center w-8 h-10 font-heading text-primary-fixed-dim text-lg italic opacity-50">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <Textarea
+                <textarea
                   placeholder={`Step ${i + 1}...`}
                   value={step}
                   onChange={(e) => updateInstruction(i, e.target.value)}
                   rows={2}
-                  className="flex-1"
+                  className="flex-1 bg-surface-container-low border-none rounded-lg font-sans text-sm p-4 focus:ring-2 focus:ring-primary/20 outline-none"
                   aria-label={`Instruction step ${i + 1}`}
                 />
                 {instructions.length > 1 && (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
                     onClick={() => removeInstruction(i)}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
+                    className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0 px-2"
                     aria-label={`Remove step ${i + 1}`}
                   >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </Button>
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
                 )}
               </div>
             ))}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
+            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block" htmlFor="edit-notes">
+              Notes
+            </label>
+            <textarea
+              id="edit-notes"
               placeholder="Any tips, variations, or stories about this recipe..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
+              className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none font-sans"
             />
           </div>
 
           <div className="flex gap-3 justify-end pt-2">
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={() => onOpenChange(false)}
+              className="px-8 py-3 rounded-full font-label text-xs uppercase tracking-widest bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high transition-colors"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               disabled={saving}
-              className="bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white"
+              className="px-8 py-3 rounded-full font-label text-xs uppercase tracking-widest bg-primary text-white shadow-md hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
             >
               {saving ? "Saving..." : recipe ? "Update Recipe" : "Save Recipe"}
-            </Button>
+            </button>
           </div>
         </form>
       </DialogContent>
