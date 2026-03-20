@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
-import { Noto_Serif, Work_Sans } from "next/font/google";
+import { Nunito, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const notoSerif = Noto_Serif({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-});
-
-const workSans = Work_Sans({
-  variable: "--font-label",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-});
-
-// Use Noto Serif as the main body font per the design system
-const notoSerifBody = Noto_Serif({
+const nunito = Nunito({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   style: ["normal", "italic"],
 });
 
@@ -36,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${notoSerifBody.variable} ${notoSerif.variable} ${workSans.variable} h-full antialiased`}
+      className={`${nunito.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <head>
         <link
