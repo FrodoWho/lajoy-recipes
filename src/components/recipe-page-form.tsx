@@ -24,12 +24,12 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
   const isEditing = !!recipe;
 
   const [title, setTitle] = useState(recipe?.title ?? "");
-  const [description, setDescription] = useState(recipe?.description ?? "");
+  const [description, setBeschrijving] = useState(recipe?.description ?? "");
   const [category, setCategory] = useState<RecipeCategory>(recipe?.category ?? "dinner");
   const [prepTime, setPrepTime] = useState(recipe?.prep_time?.toString() ?? "");
   const [cookTime, setCookTime] = useState(recipe?.cook_time?.toString() ?? "");
-  const [servings, setServings] = useState(recipe?.servings?.toString() ?? "");
-  const [ingredients, setIngredients] = useState<{ qty: string; name: string }[]>(
+  const [servings, setPorties] = useState(recipe?.servings?.toString() ?? "");
+  const [ingredients, setIngrediënten] = useState<{ qty: string; name: string }[]>(
     recipe?.ingredients?.length
       ? recipe.ingredients.map(parseIngredient)
       : [{ qty: "", name: "" }, { qty: "", name: "" }, { qty: "", name: "" }]
@@ -37,7 +37,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
   const [instructions, setInstructions] = useState<string[]>(
     recipe?.instructions?.length ? recipe.instructions : ["", ""]
   );
-  const [notes, setNotes] = useState(recipe?.notes ?? "");
+  const [notes, setNotities] = useState(recipe?.notes ?? "");
   const [imageUrl, setImageUrl] = useState(recipe?.image_url ?? "");
   const [imagePreview, setImagePreview] = useState(recipe?.image_url ?? "");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -47,17 +47,17 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
   const router = useRouter();
 
   function addIngredient() {
-    setIngredients([...ingredients, { qty: "", name: "" }]);
+    setIngrediënten([...ingredients, { qty: "", name: "" }]);
   }
 
   function removeIngredient(index: number) {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    setIngrediënten(ingredients.filter((_, i) => i !== index));
   }
 
   function updateIngredient(index: number, field: "qty" | "name", value: string) {
     const updated = [...ingredients];
     updated[index] = { ...updated[index], [field]: value };
-    setIngredients(updated);
+    setIngrediënten(updated);
   }
 
   function addInstruction() {
@@ -79,12 +79,12 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error("Selecteer een afbeelding");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+      toast.error("Afbeelding moet kleiner zijn dan 5MB");
       return;
     }
 
@@ -120,7 +120,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
 
     if (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error("Afbeelding uploaden mislukt");
       return imageUrl || null;
     }
 
@@ -139,7 +139,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
 
     const uploadedUrl = await uploadImage(supabase);
 
-    const filteredIngredients = ingredients
+    const filteredIngrediënten = ingredients
       .filter((i) => i.name.trim() !== "")
       .map((i) => (i.qty.trim() ? `${i.qty.trim()} ${i.name.trim()}` : i.name.trim()));
     const filteredInstructions = instructions.filter((i) => i.trim() !== "");
@@ -151,7 +151,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
       prep_time: prepTime ? parseInt(prepTime) : null,
       cook_time: cookTime ? parseInt(cookTime) : null,
       servings: servings ? parseInt(servings) : null,
-      ingredients: filteredIngredients,
+      ingredients: filteredIngrediënten,
       instructions: filteredInstructions,
       notes: notes || null,
       image_url: uploadedUrl,
@@ -165,20 +165,20 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
         .eq("id", recipe!.id);
 
       if (error) {
-        toast.error("Failed to update recipe");
+        toast.error("Recept bijwerken mislukt");
         console.error(error);
       } else {
-        toast.success("Recipe updated!");
+        toast.success("Recept bijgewerkt!");
         router.push(`/recipes/${recipe!.id}`);
       }
     } else {
       const { error } = await supabase.from("recipes").insert(data);
 
       if (error) {
-        toast.error("Failed to save recipe");
+        toast.error("Recept opslaan mislukt");
         console.error(error);
       } else {
-        toast.success("Recipe saved!");
+        toast.success("Recept opgeslagen!");
         router.push("/");
       }
     }
@@ -211,13 +211,13 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
           {/* Header */}
           <div className="mb-16 relative">
             <span className="font-label text-secondary-lajoy uppercase tracking-[0.2em] text-xs mb-4 block">
-              {isEditing ? "Edit Mode" : "Curation Lab"}
+              {isEditing ? "Bewerken" : "Nieuw Recept"}
             </span>
             <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl text-on-surface leading-tight max-w-2xl">
               {isEditing ? (
-                <>Edit <span className="italic text-primary">Recipe</span></>
+                <>Recept <span className="italic text-primary">Bewerken</span></>
               ) : (
-                <>Draft a New <span className="italic text-primary">Masterpiece</span></>
+                <>Maak een Nieuw <span className="italic text-primary">Meesterwerk</span></>
               )}
             </h1>
             <div className="absolute -top-10 -right-4 w-32 h-32 bg-primary-container/20 rounded-full blur-3xl -z-10" />
@@ -280,9 +280,9 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                       <span className="material-symbols-outlined text-4xl text-outline mb-4">
                         add_a_photo
                       </span>
-                      <p className="font-label text-sm text-on-surface-variant">Upload Hero Image</p>
+                      <p className="font-label text-sm text-on-surface-variant">Upload Afbeelding</p>
                       <p className="font-label text-[10px] text-outline mt-2 uppercase tracking-widest">
-                        JPG, PNG up to 5MB
+                        JPG, PNG, WebP tot 5MB
                       </p>
                     </div>
                   )}
@@ -300,7 +300,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                 <div className="bg-surface-container-low p-8 rounded-xl space-y-6">
                   <div>
                     <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-3">
-                      Recipe Category
+                      Categorie
                     </label>
                     <select
                       value={category}
@@ -317,7 +317,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-3">
-                        Prep Time
+                        Voorbereidingstijd
                       </label>
                       <input
                         className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
@@ -329,7 +329,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                     </div>
                     <div>
                       <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-3">
-                        Cook Time
+                        Kooktijd
                       </label>
                       <input
                         className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
@@ -342,14 +342,14 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   </div>
                   <div>
                     <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-3">
-                      Servings
+                      Porties
                     </label>
                     <input
                       className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none"
                       placeholder="2-4"
                       type="text"
                       value={servings}
-                      onChange={(e) => setServings(e.target.value)}
+                      onChange={(e) => setPorties(e.target.value)}
                     />
                   </div>
                 </div>
@@ -360,11 +360,11 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                 {/* Title */}
                 <section>
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">
-                    Recipe Title
+                    Titel
                   </label>
                   <input
                     className="w-full text-3xl font-heading bg-transparent border-b border-outline-variant/30 pb-4 focus:outline-none focus:border-primary transition-colors placeholder:text-surface-dim italic"
-                    placeholder="The Wildflower Honey Loaf..."
+                    placeholder="Bijv. Oma's appeltaart..."
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -372,29 +372,29 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   />
                 </section>
 
-                {/* Description */}
+                {/* Beschrijving */}
                 <section>
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">
-                    Description
+                    Beschrijving
                   </label>
                   <textarea
                     className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-24 leading-relaxed outline-none"
-                    placeholder="A short, evocative description of your recipe..."
+                    placeholder="Een korte beschrijving van je recept..."
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => setBeschrijving(e.target.value)}
                   />
                 </section>
 
-                {/* Ingredients */}
+                {/* Ingrediënten */}
                 <section className="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
                   <div className="flex justify-between items-end mb-8">
-                    <h3 className="font-heading text-2xl">Ingredients</h3>
+                    <h3 className="font-heading text-2xl">Ingrediënten</h3>
                     <button
                       type="button"
                       onClick={addIngredient}
                       className="font-label text-xs uppercase tracking-widest text-secondary-lajoy flex items-center gap-2 hover:opacity-70 transition-opacity"
                     >
-                      <span className="material-symbols-outlined text-sm">add</span> Add Row
+                      <span className="material-symbols-outlined text-sm">add</span> Toevoegen
                     </button>
                   </div>
                   <div className="space-y-4">
@@ -402,7 +402,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                       <div key={i} className="flex gap-4 items-center">
                         <input
                           className="w-16 sm:w-24 bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20"
-                          placeholder="Qty"
+                          placeholder="Hvh"
                           type="text"
                           value={ing.qty}
                           onChange={(e) => updateIngredient(i, "qty", e.target.value)}
@@ -410,7 +410,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                         />
                         <input
                           className="flex-grow bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20"
-                          placeholder="Item name..."
+                          placeholder="Ingrediënt..."
                           type="text"
                           value={ing.name}
                           onChange={(e) => updateIngredient(i, "name", e.target.value)}
@@ -431,16 +431,16 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   </div>
                 </section>
 
-                {/* Preparation Steps */}
+                {/* Bereiding Steps */}
                 <section>
                   <div className="flex justify-between items-end mb-8">
-                    <h3 className="font-heading text-2xl">Preparation</h3>
+                    <h3 className="font-heading text-2xl">Bereiding</h3>
                     <button
                       type="button"
                       onClick={addInstruction}
                       className="font-label text-xs uppercase tracking-widest text-secondary-lajoy flex items-center gap-2 hover:opacity-70 transition-opacity"
                     >
-                      <span className="material-symbols-outlined text-sm">playlist_add</span> Add Step
+                      <span className="material-symbols-outlined text-sm">playlist_add</span> Stap Toevoegen
                     </button>
                   </div>
                   <div className="space-y-8">
@@ -454,8 +454,8 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                             className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-32 leading-relaxed outline-none"
                             placeholder={
                               i === 0
-                                ? "Describe the initial preparation or mixing process..."
-                                : "Next steps in the culinary sequence..."
+                                ? "Beschrijf de eerste stap van de bereiding..."
+                                : "Volgende stappen..."
                             }
                             value={step}
                             onChange={(e) => updateInstruction(i, e.target.value)}
@@ -477,16 +477,16 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   </div>
                 </section>
 
-                {/* Notes */}
+                {/* Notities */}
                 <section>
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">
-                    Notes
+                    Notities
                   </label>
                   <textarea
                     className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-24 leading-relaxed outline-none"
-                    placeholder="Any tips, variations, or stories about this recipe..."
+                    placeholder="Tips, variaties, of verhalen over dit recept..."
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(e) => setNotities(e.target.value)}
                   />
                 </section>
               </div>
@@ -502,7 +502,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                 <span className="material-symbols-outlined text-sm">
                   {isEditing ? "undo" : "delete_sweep"}
                 </span>
-                {isEditing ? "Discard Changes" : "Discard Draft"}
+                {isEditing ? "Wijzigingen Annuleren" : "Concept Verwijderen"}
               </button>
               <div className="flex items-center gap-4 w-full md:w-auto">
                 <button
@@ -510,14 +510,14 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                   onClick={handleDiscard}
                   className="flex-1 md:flex-none px-10 py-4 rounded-full font-label text-xs uppercase tracking-[0.2em] bg-secondary-container text-on-secondary-container hover:bg-secondary-lajoy hover:text-white transition-all active:scale-95"
                 >
-                  Cancel
+                  Annuleren
                 </button>
                 <button
                   type="submit"
                   disabled={saving || uploading}
                   className="flex-1 md:flex-none px-12 py-4 rounded-full font-label text-xs uppercase tracking-[0.2em] bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {uploading ? "Uploading..." : saving ? "Saving..." : isEditing ? "Update Recipe" : "Save Recipe"}
+                  {uploading ? "Uploaden..." : saving ? "Opslaan..." : isEditing ? "Recept Bijwerken" : "Recept Opslaan"}
                 </button>
               </div>
             </div>

@@ -1,0 +1,699 @@
+"use client";
+
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { NavBar } from "@/components/nav-bar";
+import { Footer } from "@/components/footer";
+import { Toaster, toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { Recipe } from "@/lib/types";
+import { categoryLabels } from "@/lib/types";
+
+interface FridgeItem {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+interface RecipeMatch {
+  recipe: Recipe;
+  matched: string[];
+  missing: string[];
+  percentage: number;
+}
+
+/**
+ * Strip all quantities, units, and preparation adjectives to get the core ingredient name.
+ * "1kg kipfilet" -> "kipfilet"
+ * "200g verse kipfilet, in blokjes" -> "kipfilet"
+ * "2 el olijfolie" -> "olijfolie"
+ */
+function normalizeIngredient(raw: string): string {
+  const units = "g|gr|gram|kg|kilo|ml|l|dl|cl|oz|lb|tsp|tbsp|el|tl|eetlepel|eetlepels|theelepel|theelepels|cup|cups|snuf|snufje|bos|bosje|teen|tenen|stuk|stuks|plak|plakken|schijf|schijven|blad|blaadjes|takje|takjes|handvol|handjevol";
+  const adjectives = "naar smaak|optioneel|vers|verse|gedroogd|gedroogde|gemalen|gehakt|gehakte|gesneden|in blokjes|in plakjes|in stukjes|in reepjes|fijngehakt|fijngehakte|geraspt|geraspte|bijgesneden|geplet|geschaafd|geschaafde|met vel|uitgelekt|gepureerd|grote|groot|kleine|klein|halve|half";
+
+  return raw
+    .toLowerCase()
+    .replace(/[,()]/g, "")
+    // Strip all quantity+unit patterns anywhere: "200g", "1/2 tl", "2 el", "1kg"
+    .replace(new RegExp(`\\b[\\d./]+\\s*(?:${units})\\b`, "gi"), "")
+    // Also strip standalone numbers at the start: "2 eieren" -> "eieren"
+    .replace(/^\s*[\d./]+\s+/, "")
+    // Strip preparation adjectives
+    .replace(new RegExp(`\\b(?:${adjectives})\\b`, "gi"), "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Check if a fridge item matches a recipe ingredient.
+ * Only compares the core ingredient name — quantities are ignored.
+ * "1kg kipfilet" will match "200g kipfilet, in blokjes"
+ */
+function ingredientMatches(fridgeItem: string, recipeIngredient: string): boolean {
+  const fridge = normalizeIngredient(fridgeItem);
+  const recipe = normalizeIngredient(recipeIngredient);
+
+  if (!fridge || !recipe) return false;
+
+  // Direct inclusion: "kipfilet" is in "kipfilet" or vice versa
+  if (recipe.includes(fridge) || fridge.includes(recipe)) return true;
+
+  // Word-level match: any significant word from fridge item found in recipe ingredient
+  const fridgeWords = fridge.split(/\s+/).filter((w) => w.length > 2);
+  const recipeWords = recipe.split(/\s+/).filter((w) => w.length > 2);
+
+  // If fridge has meaningful words, check if any match recipe words
+  if (fridgeWords.length > 0) {
+    return fridgeWords.some((fw) =>
+      recipeWords.some((rw) => rw.includes(fw) || fw.includes(rw))
+    );
+  }
+
+  return false;
+}
+
+export default function FridgePage() {
+  const [fridgeItems, setFridgeItems] = useState<FridgeItem[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [newItem, setNewItem] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const [fridgeSearch, setFridgeSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+
+  const fetchData = useCallback(async () => {
+    const [fridgeRes, recipesRes] = await Promise.all([
+      supabase.from("fridge_items").select("*").order("created_at", { ascending: false }),
+      supabase.from("recipes").select("*").order("title"),
+    ]);
+
+    if (fridgeRes.error) {
+      console.error(fridgeRes.error);
+      toast.error("Koelkast laden mislukt");
+    } else {
+      setFridgeItems(fridgeRes.data ?? []);
+    }
+
+    if (recipesRes.error) {
+      console.error(recipesRes.error);
+    } else {
+      setRecipes(recipesRes.data ?? []);
+    }
+
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Extract unique ingredient names from all recipes for suggestions
+  const allRecipeIngredients = useMemo(() => {
+    const set = new Set<string>();
+    recipes.forEach((r) => {
+      r.ingredients?.forEach((ing) => {
+        set.add(ing);
+      });
+    });
+    return Array.from(set).sort();
+  }, [recipes]);
+
+  // Filter suggestions based on input
+  const suggestions = useMemo(() => {
+    if (!newItem.trim() || newItem.trim().length < 2) return [];
+
+    const query = newItem.toLowerCase();
+    const existingNames = fridgeItems.map((item) => item.name.toLowerCase());
+
+    return allRecipeIngredients
+      .filter((ing) => {
+        const normalized = normalizeIngredient(ing).toLowerCase();
+        const full = ing.toLowerCase();
+        return (
+          (full.includes(query) || normalized.includes(query)) &&
+          !existingNames.includes(ing.toLowerCase())
+        );
+      })
+      .slice(0, 8);
+  }, [newItem, allRecipeIngredients, fridgeItems]);
+
+  async function addItem(name?: string) {
+    const trimmed = (name ?? newItem).trim();
+    if (!trimmed) return;
+
+    if (fridgeItems.some((item) => item.name.toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("Zit al in je koelkast");
+      return;
+    }
+
+    const { error } = await supabase.from("fridge_items").insert({ name: trimmed });
+    if (error) {
+      toast.error("Toevoegen mislukt");
+      console.error(error);
+    } else {
+      setNewItem("");
+      setShowSuggestions(false);
+      fetchData();
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (selectedSuggestion >= 0 && suggestions[selectedSuggestion]) {
+      addItem(suggestions[selectedSuggestion]);
+    } else {
+      addItem();
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSuggestion((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSuggestion((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setSelectedSuggestion(-1);
+    }
+  }
+
+  async function removeItem(id: string) {
+    const { error } = await supabase.from("fridge_items").delete().eq("id", id);
+    if (error) {
+      toast.error("Verwijderen mislukt");
+    } else {
+      fetchData();
+    }
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const recipeMatches: RecipeMatch[] = useMemo(() => {
+    if (fridgeItems.length === 0) return [];
+
+    const fridgeNames = fridgeItems.map((item) => item.name);
+
+    return recipes
+      .filter((r) => r.ingredients?.length > 0)
+      .map((recipe) => {
+        const matched: string[] = [];
+        const missing: string[] = [];
+
+        recipe.ingredients.forEach((ing) => {
+          const isMatched = fridgeNames.some((fridgeItem) =>
+            ingredientMatches(fridgeItem, ing)
+          );
+          if (isMatched) {
+            matched.push(ing);
+          } else {
+            missing.push(ing);
+          }
+        });
+
+        const percentage =
+          recipe.ingredients.length > 0
+            ? Math.round((matched.length / recipe.ingredients.length) * 100)
+            : 0;
+
+        return { recipe, matched, missing, percentage };
+      })
+      .filter((m) => m.percentage > 0)
+      .sort((a, b) => b.percentage - a.percentage);
+  }, [fridgeItems, recipes]);
+
+  const readyToCook = recipeMatches.filter((m) => m.percentage === 100);
+  const almostThere = recipeMatches.filter((m) => m.percentage > 0 && m.percentage < 100);
+
+  return (
+    <div className="min-h-screen bg-surface flex flex-col">
+      <Toaster position="top-center" richColors />
+      <NavBar onSignOut={handleSignOut} />
+
+      <main id="main-content" className="pt-28 pb-20 px-4 sm:px-6 max-w-5xl mx-auto w-full flex-grow">
+        <header className="mb-10 md:mb-16">
+          <span className="font-label text-secondary-lajoy tracking-widest uppercase text-xs">
+            Ingrediënten Tracker
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-heading font-bold text-on-surface tracking-tight mt-2">
+            Mijn Koelkast
+          </h1>
+          <p className="text-on-surface-variant mt-3 max-w-lg">
+            Voeg toe wat je hebt en ontdek welke recepten je nu kunt maken.
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* Left: Fridge Items */}
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-28 space-y-6">
+              {/* Add item form with autocomplete */}
+              <form onSubmit={handleSubmit} className="relative">
+                <div className="flex gap-3">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={newItem}
+                    onChange={(e) => {
+                      setNewItem(e.target.value);
+                      setShowSuggestions(true);
+                      setSelectedSuggestion(-1);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Bijv. 500g kipfilet..."
+                    className="flex-grow bg-surface-container-highest border-none rounded-full py-3 px-5 text-sm font-label outline-none focus:ring-2 focus:ring-primary/30"
+                    aria-label="Ingrediënt toevoegen"
+                    autoComplete="off"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-primary text-white px-5 py-3 rounded-full font-label text-sm font-medium hover:opacity-90 transition-all active:scale-95 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+                  </button>
+                </div>
+
+                {/* Suggestions dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div
+                    ref={suggestionsRef}
+                    className="absolute z-20 top-full left-0 right-12 mt-2 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/20 overflow-hidden"
+                  >
+                    <p className="px-4 pt-3 pb-1 font-label text-[10px] uppercase tracking-widest text-outline">
+                      Uit je recepten
+                    </p>
+                    {suggestions.map((sug, i) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={() => addItem(sug)}
+                        onMouseEnter={() => setSelectedSuggestion(i)}
+                        className={`w-full text-left px-4 py-2.5 font-label text-sm transition-colors flex items-center gap-3 ${
+                          i === selectedSuggestion
+                            ? "bg-primary-container/30 text-on-surface"
+                            : "text-on-surface-variant hover:bg-surface-container-low"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-sm text-primary/40" aria-hidden="true">
+                          add_circle
+                        </span>
+                        {sug}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </form>
+
+              {/* Items list */}
+              {loading ? (
+                <div className="text-center py-8" aria-live="polite" role="status">
+                  <span className="material-symbols-outlined text-3xl text-primary-container animate-pulse" aria-hidden="true">
+                    kitchen
+                  </span>
+                  <p className="text-on-surface-variant mt-2 text-sm font-label">Laden...</p>
+                </div>
+              ) : fridgeItems.length === 0 ? (
+                <div className="text-center py-8 bg-surface-container-low rounded-xl">
+                  <span className="material-symbols-outlined text-4xl text-outline-variant/40 mb-2" aria-hidden="true">
+                    kitchen
+                  </span>
+                  <p className="text-on-surface-variant text-sm font-label">
+                    Je koelkast is leeg
+                  </p>
+                  <p className="text-outline text-xs font-label mt-1">
+                    Voeg hierboven ingrediënten toe
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-surface-container-low rounded-xl overflow-hidden">
+                  {/* Header with count and filter */}
+                  <div className="px-4 py-3 border-b border-outline-variant/15 flex items-center justify-between">
+                    <p className="font-label text-xs uppercase tracking-widest text-outline">
+                      {fridgeItems.length} ingrediënt{fridgeItems.length !== 1 ? "en" : ""}
+                    </p>
+                    <button
+                      onClick={async () => {
+                        if (!confirm("Alle ingrediënten verwijderen?")) return;
+                        for (const item of fridgeItems) {
+                          await supabase.from("fridge_items").delete().eq("id", item.id);
+                        }
+                        fetchData();
+                      }}
+                      className="font-label text-[10px] uppercase tracking-widest text-outline-variant hover:text-error-lajoy transition-colors"
+                    >
+                      Alles wissen
+                    </button>
+                  </div>
+
+                  {/* Search within fridge */}
+                  {fridgeItems.length > 5 && (
+                    <div className="px-4 py-2 border-b border-outline-variant/10">
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline-variant text-sm" aria-hidden="true">
+                          search
+                        </span>
+                        <input
+                          type="text"
+                          value={fridgeSearch}
+                          onChange={(e) => setFridgeSearch(e.target.value)}
+                          placeholder="Filter..."
+                          className="w-full bg-transparent border-none py-1.5 pl-8 pr-2 text-xs font-label outline-none placeholder:text-outline-variant/60"
+                          aria-label="Filter ingrediënten"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Scrollable item list */}
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {fridgeItems
+                      .filter((item) =>
+                        !fridgeSearch || item.name.toLowerCase().includes(fridgeSearch.toLowerCase())
+                      )
+                      .map((item, i, arr) => (
+                        <div
+                          key={item.id}
+                          className={`flex items-center gap-3 px-4 py-2.5 group hover:bg-surface-container-high/50 transition-colors ${
+                            i < arr.length - 1 ? "border-b border-outline-variant/10" : ""
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-sm text-primary-fixed-dim" aria-hidden="true">
+                            check_circle
+                          </span>
+                          <span className="flex-grow font-label text-sm text-on-surface truncate">
+                            {item.name}
+                          </span>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="p-1 rounded-full hover:bg-error-container/50 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                            aria-label={`${item.name} verwijderen`}
+                          >
+                            <span className="material-symbols-outlined text-sm text-error-lajoy/70" aria-hidden="true">close</span>
+                          </button>
+                        </div>
+                      ))}
+                    {fridgeSearch && fridgeItems.filter((item) =>
+                      item.name.toLowerCase().includes(fridgeSearch.toLowerCase())
+                    ).length === 0 && (
+                      <p className="px-4 py-4 text-center text-xs font-label text-outline-variant">
+                        Geen resultaten voor &ldquo;{fridgeSearch}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Recipe Matches */}
+          <div className="lg:col-span-8">
+            {fridgeItems.length === 0 ? (
+              <div className="text-center py-16">
+                <span className="material-symbols-outlined text-6xl text-outline-variant/30 mb-4" aria-hidden="true">
+                  grocery
+                </span>
+                <h2 className="text-xl font-heading font-semibold mb-2 text-on-surface">
+                  Voeg ingrediënten toe om te beginnen
+                </h2>
+                <p className="text-on-surface-variant font-label">
+                  We matchen ze met je recepten en laten zien wat je kunt koken.
+                </p>
+              </div>
+            ) : recipeMatches.length === 0 ? (
+              <div className="text-center py-16">
+                <span className="material-symbols-outlined text-6xl text-outline-variant/30 mb-4" aria-hidden="true">
+                  search_off
+                </span>
+                <h2 className="text-xl font-heading font-semibold mb-2 text-on-surface">
+                  Geen overeenkomende recepten
+                </h2>
+                <p className="text-on-surface-variant font-label">
+                  Geen van je recepten gebruikt deze ingrediënten. Probeer er meer toe te voegen!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-10">
+                {/* Klaar om te koken */}
+                {readyToCook.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className="material-symbols-outlined text-primary" aria-hidden="true">check_circle</span>
+                      <h2 className="font-heading text-2xl font-bold text-on-surface">
+                        Klaar om te Koken
+                      </h2>
+                      <span className="font-label text-xs bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-semibold">
+                        {readyToCook.length}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {readyToCook.map(({ recipe }) => (
+                        <Link
+                          key={recipe.id}
+                          href={`/recipes/${recipe.id}`}
+                          className="flex items-center gap-5 p-5 rounded-xl bg-primary-container/20 hover:bg-primary-container/30 transition-all group border-2 border-primary-container/40"
+                        >
+                          <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-primary-container/30">
+                            {recipe.image_url ? (
+                              <img src={recipe.image_url} alt={recipe.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="material-symbols-outlined text-xl text-primary/40" aria-hidden="true">restaurant</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h3 className="font-heading text-lg font-bold text-on-surface truncate">
+                              {recipe.title}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
+                                {categoryLabels[recipe.category]}
+                              </span>
+                              <span className="text-outline-variant">·</span>
+                              <span className="font-label text-xs text-primary font-semibold">
+                                Alle ingrediënten aanwezig!
+                              </span>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-primary shrink-0 group-hover:translate-x-1 transition-transform" aria-hidden="true">
+                            arrow_forward
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Bijna compleet */}
+                {almostThere.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-3 mb-6 flex-wrap">
+                      <span className="material-symbols-outlined text-outline" aria-hidden="true">lock</span>
+                      <h2 className="font-heading text-2xl font-bold text-on-surface">
+                        Bijna Compleet
+                      </h2>
+                      <span className="font-label text-xs bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full font-semibold">
+                        {almostThere.length}
+                      </span>
+                      <button
+                        onClick={async () => {
+                          // Collect all unique missing ingredients across all recipes
+                          const allMissing = new Set<string>();
+                          almostThere.forEach(({ missing }) => missing.forEach((ing) => allMissing.add(ing)));
+
+                          const text = `Boodschappenlijst (${allMissing.size} items):\n\n${Array.from(allMissing).map((ing) => `- ${ing}`).join("\n")}`;
+
+                          if (navigator.share) {
+                            try {
+                              await navigator.share({ title: "Boodschappenlijst", text });
+                            } catch { /* cancelled */ }
+                          } else {
+                            await navigator.clipboard.writeText(text);
+                            toast.success("Boodschappenlijst gekopieerd!");
+                          }
+                        }}
+                        className="ml-auto font-label text-xs uppercase tracking-widest text-primary flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">share</span>
+                        Deel alles
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {almostThere.map(({ recipe, matched, missing, percentage }) => {
+                        const isExpanded = expandedRecipe === recipe.id;
+
+                        return (
+                          <div
+                            key={recipe.id}
+                            className="rounded-xl overflow-hidden border border-outline-variant/20 transition-all"
+                          >
+                            <button
+                              onClick={() => setExpandedRecipe(isExpanded ? null : recipe.id)}
+                              className="w-full flex items-center gap-5 p-5 text-left hover:bg-surface-container-low/50 transition-colors"
+                              aria-expanded={isExpanded}
+                            >
+                              <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-surface-container-highest relative">
+                                {recipe.image_url ? (
+                                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-full object-cover grayscale opacity-50" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl text-outline-variant/40" aria-hidden="true">restaurant</span>
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="material-symbols-outlined text-sm text-on-surface-variant/60" aria-hidden="true">lock</span>
+                                </div>
+                              </div>
+
+                              <div className="flex-grow min-w-0">
+                                <h3 className="font-heading text-lg font-bold text-on-surface/60 truncate">
+                                  {recipe.title}
+                                </h3>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <div className="flex-grow h-2 bg-surface-container-highest rounded-full overflow-hidden max-w-48">
+                                    <div
+                                      className="h-full rounded-full transition-all duration-500"
+                                      style={{
+                                        width: `${percentage}%`,
+                                        backgroundColor:
+                                          percentage >= 80 ? "#6e5d00" :
+                                          percentage >= 50 ? "#dec65f" :
+                                          "#cec6b2",
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="font-label text-xs text-on-surface-variant font-semibold shrink-0">
+                                    {matched.length}/{recipe.ingredients.length}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`material-symbols-outlined text-outline-variant shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                aria-hidden="true"
+                              >
+                                expand_more
+                              </span>
+                            </button>
+
+                            <div
+                              className={`grid transition-all duration-300 ease-in-out ${
+                                isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                              }`}
+                            >
+                              <div className="overflow-hidden">
+                              <div className="px-5 pb-5 border-t border-outline-variant/10">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                                  <div>
+                                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-primary font-bold mb-3 flex items-center gap-1.5">
+                                      <span className="material-symbols-outlined text-xs" aria-hidden="true">check</span>
+                                      In huis ({matched.length})
+                                    </p>
+                                    <ul className="space-y-1.5">
+                                      {matched.map((ing, i) => (
+                                        <li key={i} className="text-sm text-on-surface-variant font-label flex items-start gap-2">
+                                          <span className="text-primary mt-0.5" aria-hidden="true">·</span>
+                                          {ing}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+
+                                  <div>
+                                    <p className="font-label text-[10px] uppercase tracking-[0.15em] text-error-lajoy font-bold mb-3 flex items-center gap-1.5">
+                                      <span className="material-symbols-outlined text-xs" aria-hidden="true">shopping_cart</span>
+                                      Nog nodig ({missing.length})
+                                    </p>
+                                    <ul className="space-y-1.5">
+                                      {missing.map((ing, i) => (
+                                        <li key={i} className="text-sm text-on-surface-variant/60 font-label flex items-start gap-2">
+                                          <span className="text-error-lajoy/40 mt-0.5" aria-hidden="true">·</span>
+                                          {ing}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                                  <button
+                                    onClick={async () => {
+                                      const text = `Boodschappenlijst voor "${recipe.title}":\n\n${missing.map((ing) => `- ${ing}`).join("\n")}`;
+
+                                      if (navigator.share) {
+                                        try {
+                                          await navigator.share({
+                                            title: `Boodschappen: ${recipe.title}`,
+                                            text,
+                                          });
+                                        } catch {
+                                          // User cancelled share
+                                        }
+                                      } else {
+                                        await navigator.clipboard.writeText(text);
+                                        toast.success("Boodschappenlijst gekopieerd!");
+                                      }
+                                    }}
+                                    className="font-label text-xs uppercase tracking-widest text-primary flex items-center gap-2 hover:opacity-70 transition-opacity"
+                                  >
+                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">share</span>
+                                    Deel boodschappenlijst
+                                  </button>
+                                  <Link
+                                    href={`/recipes/${recipe.id}`}
+                                    className="font-label text-xs uppercase tracking-widest text-secondary-lajoy flex items-center gap-2 hover:opacity-70 transition-opacity"
+                                  >
+                                    Bekijk recept
+                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
+                                  </Link>
+                                </div>
+                              </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

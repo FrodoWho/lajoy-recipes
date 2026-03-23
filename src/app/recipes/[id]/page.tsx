@@ -18,6 +18,8 @@ export default function RecipeDetailPage({
   const { id } = use(params);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
@@ -31,7 +33,7 @@ export default function RecipeDetailPage({
 
       if (error) {
         console.error(error);
-        toast.error("Recipe not found");
+        toast.error("Recept niet gevonden");
         router.push("/");
       } else {
         setRecipe(data);
@@ -56,10 +58,28 @@ export default function RecipeDetailPage({
       .eq("id", recipe.id);
 
     if (error) {
-      toast.error("Failed to update");
+      toast.error("Bijwerken mislukt");
     } else {
       setRecipe({ ...recipe, is_favorite: !recipe.is_favorite });
     }
+  }
+
+  function toggleIngredient(index: number) {
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  }
+
+  function toggleStep(index: number) {
+    setCheckedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
   }
 
   if (loading) {
@@ -97,14 +117,14 @@ export default function RecipeDetailPage({
                   <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
                     arrow_back
                   </span>
-                  Back to Recipes
+                  Terug naar recepten
                 </Link>
                 <Link
                   href={`/recipes/${recipe.id}/edit`}
                   className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-sm">edit</span>
-                  Edit Recipe
+                  Bewerken
                 </Link>
               </nav>
 
@@ -116,19 +136,19 @@ export default function RecipeDetailPage({
                 {recipe.prep_time != null && (
                   <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
                     <span className="material-symbols-outlined text-primary" aria-hidden="true">schedule</span>
-                    <span className="font-label text-sm font-medium">{recipe.prep_time} min prep</span>
+                    <span className="font-label text-sm font-medium">{recipe.prep_time} min voorbereiden</span>
                   </div>
                 )}
                 {recipe.cook_time != null && (
                   <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
                     <span className="material-symbols-outlined text-primary" aria-hidden="true">local_fire_department</span>
-                    <span className="font-label text-sm font-medium">{recipe.cook_time} min cook</span>
+                    <span className="font-label text-sm font-medium">{recipe.cook_time} min koken</span>
                   </div>
                 )}
                 {recipe.servings != null && (
                   <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
                     <span className="material-symbols-outlined text-primary" aria-hidden="true">group</span>
-                    <span className="font-label text-sm font-medium">{recipe.servings} servings</span>
+                    <span className="font-label text-sm font-medium">{recipe.servings} porties</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 bg-secondary-container/30 px-4 py-2 rounded-full text-secondary-lajoy">
@@ -139,7 +159,7 @@ export default function RecipeDetailPage({
                 <button
                   onClick={handleToggleFavorite}
                   className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full hover:bg-secondary-container/30 transition-colors"
-                  aria-label={recipe.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                  aria-label={recipe.is_favorite ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
                 >
                   <span
                     className={`material-symbols-outlined text-secondary-lajoy`}
@@ -148,7 +168,7 @@ export default function RecipeDetailPage({
                     favorite
                   </span>
                   <span className="font-label text-sm font-medium">
-                    {recipe.is_favorite ? "Favorited" : "Favorite"}
+                    {recipe.is_favorite ? "Favoriet" : "Favoriet"}
                   </span>
                 </button>
               </div>
@@ -198,18 +218,35 @@ export default function RecipeDetailPage({
               {recipe.ingredients?.length > 0 && (
                 <div>
                   <h2 className="font-heading text-2xl font-bold mb-8 flex items-center gap-3">
-                    Ingredients
+                    Ingrediënten
                     <span className="h-[1px] flex-grow bg-outline-variant/30" aria-hidden="true" />
                   </h2>
-                  <ul className="space-y-6 font-sans text-lg">
-                    {recipe.ingredients.map((ing, i) => (
-                      <li key={i} className="flex gap-4 items-start group">
-                        <span className="material-symbols-outlined text-primary-fixed-dim mt-1 group-hover:text-primary transition-colors">
-                          circle
-                        </span>
-                        <span>{ing}</span>
-                      </li>
-                    ))}
+                  <ul className="space-y-4 font-sans text-lg">
+                    {recipe.ingredients.map((ing, i) => {
+                      const checked = checkedIngredients.has(i);
+                      return (
+                        <li
+                          key={i}
+                          className="flex gap-4 items-start cursor-pointer group"
+                          onClick={() => toggleIngredient(i)}
+                        >
+                          <span
+                            className={`material-symbols-outlined mt-1 transition-all shrink-0 ${
+                              checked
+                                ? "text-primary"
+                                : "text-outline-variant group-hover:text-primary-fixed-dim"
+                            }`}
+                            style={checked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                            aria-hidden="true"
+                          >
+                            {checked ? "check_circle" : "circle"}
+                          </span>
+                          <span className={`transition-all ${checked ? "line-through text-on-surface-variant/40" : ""}`}>
+                            {ing}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -217,12 +254,12 @@ export default function RecipeDetailPage({
               {totalTime && (
                 <div className="bg-surface-container-highest p-8 rounded-3xl">
                   <h3 className="font-label text-xs uppercase tracking-widest text-secondary-lajoy font-bold mb-4">
-                    Total Time
+                    Totale Tijd
                   </h3>
                   <p className="text-sm font-sans italic leading-relaxed">
-                    {totalTime} minutes from start to finish.
+                    {totalTime} minuten van begin tot eind.
                     {recipe.prep_time && recipe.cook_time && (
-                      <> That&apos;s {recipe.prep_time} min prep + {recipe.cook_time} min cooking.</>
+                      <> Dat is {recipe.prep_time} min voorbereiding + {recipe.cook_time} min koken.</>
                     )}
                   </p>
                 </div>
@@ -235,25 +272,51 @@ export default function RecipeDetailPage({
             {recipe.instructions?.length > 0 && (
               <div>
                 <h2 className="font-heading text-2xl font-bold mb-12 flex items-center gap-3">
-                  Preparation
+                  Bereiding
                   <span className="h-[1px] flex-grow bg-outline-variant/30" aria-hidden="true" />
                 </h2>
-                <div className="space-y-16">
-                  {recipe.instructions.map((step, i) => (
-                    <div key={i} className="flex gap-8 items-start group">
-                      <span className="font-heading text-3xl md:text-6xl text-secondary-lajoy/10 group-hover:text-secondary-lajoy/20 transition-colors shrink-0">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div>
-                        <h3 className="font-heading text-xl font-bold mb-3">
-                          Step {i + 1}
-                        </h3>
-                        <p className="text-lg leading-relaxed text-on-surface-variant font-sans">
-                          {step}
-                        </p>
+                <div className="space-y-12">
+                  {recipe.instructions.map((step, i) => {
+                    const checked = checkedSteps.has(i);
+                    return (
+                      <div
+                        key={i}
+                        className={`flex gap-6 md:gap-8 items-start cursor-pointer group transition-all ${
+                          checked ? "opacity-40" : ""
+                        }`}
+                        onClick={() => toggleStep(i)}
+                      >
+                        <div className="shrink-0 flex flex-col items-center gap-2">
+                          <span className={`font-heading text-3xl md:text-6xl transition-colors shrink-0 ${
+                            checked ? "text-primary/30" : "text-secondary-lajoy/10 group-hover:text-secondary-lajoy/20"
+                          }`}>
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span
+                            className={`material-symbols-outlined transition-all ${
+                              checked ? "text-primary" : "text-outline-variant/30 group-hover:text-outline-variant/60"
+                            }`}
+                            style={checked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                            aria-hidden="true"
+                          >
+                            {checked ? "check_circle" : "radio_button_unchecked"}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className={`font-heading text-xl font-bold mb-3 transition-all ${
+                            checked ? "line-through" : ""
+                          }`}>
+                            Stap {i + 1}
+                          </h3>
+                          <p className={`text-lg leading-relaxed font-sans transition-all ${
+                            checked ? "line-through text-on-surface-variant/40" : "text-on-surface-variant"
+                          }`}>
+                            {step}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -272,7 +335,7 @@ export default function RecipeDetailPage({
             </p>
           </div>
           <a className="font-label text-xs tracking-widest uppercase text-on-surface-variant hover:text-secondary-lajoy transition-all underline decoration-primary-container decoration-0 hover:decoration-2 underline-offset-8" href="mailto:support@lajoys.com">
-            Support
+            Ondersteuning
           </a>
         </div>
       </footer>

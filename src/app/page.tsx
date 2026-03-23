@@ -39,7 +39,7 @@ export default function HomePage() {
 
     if (error) {
       console.error(error);
-      toast.error("Failed to load recipes");
+      toast.error("Recepten laden mislukt");
     } else {
       setRecipes(data ?? []);
     }
@@ -57,7 +57,7 @@ export default function HomePage() {
   }
 
   async function handleDelete(recipe: Recipe) {
-    if (!confirm(`Delete "${recipe.title}"? This can't be undone.`)) return;
+    if (!confirm(`"${recipe.title}" verwijderen? Dit kan niet ongedaan worden.`)) return;
 
     const { error } = await supabase
       .from("recipes")
@@ -65,9 +65,9 @@ export default function HomePage() {
       .eq("id", recipe.id);
 
     if (error) {
-      toast.error("Failed to delete recipe");
+      toast.error("Recept verwijderen mislukt");
     } else {
-      toast.success("Recipe deleted");
+      toast.success("Recept verwijderd");
       fetchRecipes();
     }
   }
@@ -79,7 +79,7 @@ export default function HomePage() {
       .eq("id", recipe.id);
 
     if (error) {
-      toast.error("Failed to update");
+      toast.error("Bijwerken mislukt");
     } else {
       fetchRecipes();
     }
@@ -113,23 +113,23 @@ export default function HomePage() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-6 md:gap-8">
           <div className="space-y-2">
             <span className="font-label text-secondary-lajoy tracking-widest uppercase text-xs">
-              Your Curated Collection
+              Jouw verzameling
             </span>
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading font-bold text-on-surface tracking-tight">
-              My Recipes
+              Mijn Recepten
             </h1>
           </div>
           <div className="flex flex-wrap gap-8 md:gap-12 items-center">
             <div className="text-center">
               <p className="text-3xl font-heading font-bold text-primary">{totalRecipes}</p>
               <p className="font-label text-xs uppercase tracking-widest text-outline">
-                Total Recipes
+                Totaal
               </p>
             </div>
             <div className="text-center border-l border-outline-variant/20 pl-8 md:pl-12">
               <p className="text-3xl font-heading font-bold text-secondary-lajoy">{favoriteCount}</p>
               <p className="font-label text-xs uppercase tracking-widest text-outline">
-                Favorites
+                Favorieten
               </p>
             </div>
             <Link
@@ -137,7 +137,7 @@ export default function HomePage() {
               className="bg-primary text-white px-8 py-4 rounded-full font-label font-medium flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/10"
             >
               <span className="material-symbols-outlined" aria-hidden="true">add</span>
-              Add New Recipe
+              Nieuw Recept
             </Link>
           </div>
         </header>
@@ -150,11 +150,11 @@ export default function HomePage() {
             </span>
             <input
               className="w-full bg-surface-container-highest rounded-full py-3 pl-10 pr-4 text-sm border-none focus:ring-2 focus:ring-primary font-label outline-none"
-              placeholder="Search recipes..."
+              placeholder="Zoek recepten..."
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search recipes"
+              aria-label="Zoek recepten"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function HomePage() {
                   : "bg-surface-container-highest text-on-surface-variant hover:bg-secondary-container/30"
               }`}
             >
-              {tab === "all" ? "All" : categoryLabels[tab as RecipeCategory]}
+              {tab === "all" ? "Alles" : categoryLabels[tab as RecipeCategory]}
             </button>
           ))}
         </nav>
@@ -183,7 +183,7 @@ export default function HomePage() {
             <span className="material-symbols-outlined text-5xl text-primary-container animate-pulse" aria-hidden="true">
               skillet
             </span>
-            <p className="text-on-surface-variant mt-4 font-label">Loading recipes...</p>
+            <p className="text-on-surface-variant mt-4 font-label">Recepten laden...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
@@ -191,12 +191,12 @@ export default function HomePage() {
               menu_book
             </span>
             <h2 className="text-xl font-heading font-semibold mb-2 text-on-surface">
-              {recipes.length === 0 ? "No recipes yet!" : "No recipes found"}
+              {recipes.length === 0 ? "Nog geen recepten!" : "Geen recepten gevonden"}
             </h2>
             <p className="text-on-surface-variant mb-6 font-label">
               {recipes.length === 0
-                ? "Start by adding your first recipe"
-                : "Try a different search or category"}
+                ? "Begin met het toevoegen van je eerste recept"
+                : "Probeer een andere zoekopdracht of categorie"}
             </p>
             {recipes.length === 0 && (
               <Link
@@ -204,7 +204,7 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-label font-medium hover:opacity-90 transition-all"
               >
                 <span className="material-symbols-outlined" aria-hidden="true">add</span>
-                Add First Recipe
+                Eerste Recept Toevoegen
               </Link>
             )}
           </div>

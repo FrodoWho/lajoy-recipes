@@ -11,8 +11,9 @@ export function NavBar({ onSignOut }: NavBarProps) {
   const pathname = usePathname();
 
   const links = [
-    { href: "/", label: "Recipes" },
-    { href: "/favorites", label: "Favorites" },
+    { href: "/", label: "Recepten" },
+    { href: "/favorites", label: "Favorieten" },
+    { href: "/fridge", label: "Mijn Koelkast" },
   ];
 
   return (
@@ -48,23 +49,23 @@ export function NavBar({ onSignOut }: NavBarProps) {
             </span>
             <input
               className="bg-surface-container-highest rounded-full py-2 pl-10 pr-4 text-sm border-none focus:ring-2 focus:ring-primary w-44 md:w-64 font-label outline-none"
-              placeholder="Search culinary inspiration..."
+              placeholder="Zoek een recept..."
               type="text"
-              aria-label="Search recipes"
+              aria-label="Zoek recepten"
             />
           </div>
           {onSignOut && (
             <button
               onClick={onSignOut}
               className="p-3 sm:p-2 rounded-full hover:bg-primary-container/20 transition-colors"
-              aria-label="Sign out"
+              aria-label="Uitloggen"
             >
               <span className="material-symbols-outlined text-primary" aria-hidden="true">logout</span>
             </button>
           )}
           <button
             className="p-3 sm:p-2 rounded-full hover:bg-primary-container/20 transition-colors"
-            aria-label="Account"
+            aria-label="Account instellingen"
           >
             <span className="material-symbols-outlined text-primary" aria-hidden="true">account_circle</span>
           </button>

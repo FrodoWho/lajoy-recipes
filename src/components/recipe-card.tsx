@@ -47,7 +47,7 @@ export function RecipeCard({
         role="article"
         aria-label={`Recipe: ${recipe.title}`}
       >
-        <div className="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 h-full min-h-56 sm:min-h-72">
+        <div className="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 min-h-72 max-h-96">
           {recipe.image_url ? (
             <img
               alt={recipe.title}
@@ -65,18 +65,18 @@ export function RecipeCard({
           <div className="absolute bottom-0 left-0 p-8 text-white">
             <div className="flex items-center gap-3 mb-3">
               <span className="bg-primary-container/90 text-on-surface px-3 py-1 rounded-full text-xs font-label uppercase tracking-widest">
-                Featured
+                Uitgelicht
               </span>
               {totalTime && (
                 <span className="text-xs font-label uppercase tracking-widest opacity-80">
                   {formatTime(totalTime)}
-                  {recipe.servings ? ` · ${recipe.servings} Servings` : ""}
+                  {recipe.servings ? ` · ${recipe.servings} Porties` : ""}
                 </span>
               )}
             </div>
             <h2 className="text-4xl font-heading font-bold mb-2">{recipe.title}</h2>
             {recipe.description && (
-              <p className="font-sans italic text-white/80 max-w-md">
+              <p className="font-sans italic text-white/80 max-w-md line-clamp-2">
                 {recipe.description}
               </p>
             )}
@@ -88,7 +88,7 @@ export function RecipeCard({
               e.stopPropagation();
               onToggleFavorite(recipe);
             }}
-            aria-label={recipe.is_favorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={recipe.is_favorite ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
           >
             <span
               className={`material-symbols-outlined text-secondary-lajoy ${
@@ -107,7 +107,7 @@ export function RecipeCard({
                 e.stopPropagation();
                 router.push(`/recipes/${recipe.id}/edit`);
               }}
-              aria-label="Edit recipe"
+              aria-label="Recept bewerken"
             >
               <span className="material-symbols-outlined text-sm text-on-surface" aria-hidden="true">edit</span>
             </button>
@@ -117,7 +117,7 @@ export function RecipeCard({
                 e.stopPropagation();
                 onDelete(recipe);
               }}
-              aria-label="Delete recipe"
+              aria-label="Recept verwijderen"
             >
               <span className="material-symbols-outlined text-sm text-error-lajoy" aria-hidden="true">delete</span>
             </button>
@@ -129,7 +129,7 @@ export function RecipeCard({
 
   return (
     <article
-      className="bg-surface-container-low rounded-xl overflow-hidden group hover:shadow-xl hover:shadow-secondary-lajoy/5 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="bg-surface-container-low rounded-xl overflow-hidden group hover:shadow-xl hover:shadow-secondary-lajoy/5 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 flex flex-col min-h-72 max-h-96"
       onClick={() => onClick(recipe)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -162,7 +162,7 @@ export function RecipeCard({
             e.stopPropagation();
             onToggleFavorite(recipe);
           }}
-          aria-label={recipe.is_favorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={recipe.is_favorite ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
         >
           <span
             className={`material-symbols-outlined text-secondary-lajoy ${
@@ -190,7 +190,7 @@ export function RecipeCard({
               e.stopPropagation();
               router.push(`/recipes/${recipe.id}/edit`);
             }}
-            aria-label="Edit recipe"
+            aria-label="Recept bewerken"
           >
             <span className="material-symbols-outlined text-sm text-on-surface" aria-hidden="true">edit</span>
           </button>
@@ -200,7 +200,7 @@ export function RecipeCard({
               e.stopPropagation();
               onDelete(recipe);
             }}
-            aria-label="Delete recipe"
+            aria-label="Recept verwijderen"
           >
             <span className="material-symbols-outlined text-sm text-error-lajoy" aria-hidden="true">delete</span>
           </button>
@@ -234,7 +234,7 @@ export function RecipeCard({
             </span>
           )}
           {recipe.ingredients?.length > 0 && (
-            <span>{recipe.ingredients.length} ingredients</span>
+            <span>{recipe.ingredients.length} ingrediënten</span>
           )}
         </div>
       </div>

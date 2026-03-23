@@ -25,7 +25,7 @@ export default function FavoritesPage() {
 
     if (error) {
       console.error(error);
-      toast.error("Failed to load favorites");
+      toast.error("Favorieten laden mislukt");
     } else {
       setRecipes(data ?? []);
     }
@@ -49,9 +49,9 @@ export default function FavoritesPage() {
       .eq("id", recipe.id);
 
     if (error) {
-      toast.error("Failed to update");
+      toast.error("Bijwerken mislukt");
     } else {
-      toast.success("Removed from favorites");
+      toast.success("Verwijderd uit favorieten");
       fetchFavorites();
     }
   }
@@ -65,10 +65,10 @@ export default function FavoritesPage() {
         {/* Simple header */}
         <header className="mb-12">
           <span className="font-label text-secondary-lajoy tracking-widest uppercase text-xs">
-            Your saved recipes
+            Jouw opgeslagen recepten
           </span>
           <h1 className="text-4xl font-heading font-bold text-on-surface tracking-tight mt-2">
-            Favorites
+            Favorieten
           </h1>
         </header>
 
@@ -78,7 +78,7 @@ export default function FavoritesPage() {
             <span className="material-symbols-outlined text-5xl text-primary-container animate-pulse" aria-hidden="true">
               favorite
             </span>
-            <p className="text-on-surface-variant mt-4 font-label">Loading favorites...</p>
+            <p className="text-on-surface-variant mt-4 font-label">Favorieten laden...</p>
           </div>
         ) : recipes.length === 0 ? (
           <div className="text-center py-20">
@@ -86,17 +86,17 @@ export default function FavoritesPage() {
               heart_broken
             </span>
             <h2 className="text-xl font-heading font-semibold mb-2 text-on-surface">
-              No favorites yet
+              Nog geen favorieten
             </h2>
             <p className="text-on-surface-variant mb-6 font-label">
-              Heart a recipe to save it here for quick access.
+              Markeer een recept als favoriet om het hier te bewaren.
             </p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-primary font-label text-sm uppercase tracking-widest hover:opacity-70 transition-opacity"
             >
               <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
-              Browse recipes
+              Bekijk recepten
             </Link>
           </div>
         ) : (

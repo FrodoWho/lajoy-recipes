@@ -14,7 +14,7 @@ export function Footer() {
           className="font-label text-xs tracking-widest uppercase text-on-surface-variant hover:text-secondary-lajoy transition-all underline decoration-primary-container decoration-0 hover:decoration-2 underline-offset-8"
           href="mailto:support@lajoys.com"
         >
-          Support
+          Ondersteuning
         </a>
       </div>
     </footer>

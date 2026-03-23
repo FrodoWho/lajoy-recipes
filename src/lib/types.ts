@@ -36,11 +36,11 @@ export const categoryEmojis: Record<RecipeCategory, string> = {
 };
 
 export const categoryLabels: Record<RecipeCategory, string> = {
-  bakery: "Bakery",
-  dinner: "Dinner",
+  bakery: "Bakkerij",
+  dinner: "Diner",
   lunch: "Lunch",
-  breakfast: "Breakfast",
+  breakfast: "Ontbijt",
   dessert: "Dessert",
   snack: "Snack",
-  drink: "Drink",
+  drink: "Drank",
 };

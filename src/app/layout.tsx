@@ -16,8 +16,8 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Lajoy's Recipes",
-  description: "A curated hearth of culinary inspiration and artisanal recipes",
+  title: "Lajoy's Recepten",
+  description: "Jouw persoonlijke verzameling recepten — van bakkerij tot diner",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="nl"
       className={`${nunito.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <head>
@@ -41,7 +41,7 @@ export default function RootLayout({
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-full focus:font-label focus:text-sm"
         >
-          Skip to content
+          Ga naar inhoud
         </a>
         {children}
       </body>

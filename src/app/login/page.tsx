@@ -65,7 +65,7 @@ export default function LoginPage() {
                   Recipes
                 </h1>
                 <p className="mt-6 font-sans text-on-surface text-lg max-w-xs leading-relaxed">
-                  Step into a curated hearth of culinary inspiration and artisanal recipes.
+                  Ontdek een wereld van culinaire inspiratie en ambachtelijke recepten.
                 </p>
               </div>
               {/* Hero image */}
@@ -84,10 +84,10 @@ export default function LoginPage() {
             <div className="max-w-sm mx-auto w-full">
               <header className="mb-12">
                 <span className="font-label text-xs text-secondary-lajoy tracking-widest uppercase mb-2 block">
-                  {isSignUp ? "Get Started" : "Welcome Back"}
+                  {isSignUp ? "Aan de slag" : "Welkom terug"}
                 </span>
                 <h2 className="font-heading text-on-surface text-3xl font-medium">
-                  {isSignUp ? "Create your account" : "Sign in to Lajoy's Recipes"}
+                  {isSignUp ? "Maak een account aan" : "Inloggen bij Lajoy's Recepten"}
                 </h2>
               </header>
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
                     className="font-label text-xs text-on-surface-variant block ml-1"
                     htmlFor="email"
                   >
-                    Email Address
+                    E-mailadres
                   </label>
                   <input
                     className="w-full px-4 py-3 bg-surface-container-highest border-none rounded-lg focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all duration-300 outline-none font-label text-sm"
@@ -117,11 +117,11 @@ export default function LoginPage() {
                       className="font-label text-xs text-on-surface-variant block ml-1"
                       htmlFor="password"
                     >
-                      Password
+                      Wachtwoord
                     </label>
                     {!isSignUp && (
                       <button type="button" className="font-label text-xs text-secondary-lajoy hover:underline underline-offset-4">
-                        Forgot?
+                        Vergeten?
                       </button>
                     )}
                   </div>
@@ -154,7 +154,7 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full py-4 bg-primary text-white font-label font-semibold rounded-full hover:opacity-90 active:scale-[0.98] transition-all shadow-md mt-4 disabled:opacity-50"
                 >
-                  {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+                  {loading ? "Laden..." : isSignUp ? "Registreren" : "Inloggen"}
                 </button>
               </form>
 
@@ -164,7 +164,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase tracking-tighter">
                   <span className="bg-surface px-4 text-on-surface-variant font-label">
-                    Or continue with
+                    Of ga verder met
                   </span>
                 </div>
               </div>
@@ -188,7 +188,7 @@ export default function LoginPage() {
               </div>
 
               <p className="mt-12 text-center font-label text-sm text-on-surface-variant">
-                {isSignUp ? "Already have an account? " : "Don't have an account? "}
+                {isSignUp ? "Heb je al een account? " : "Nog geen account? "}
                 <button
                   type="button"
                   onClick={() => {
@@ -198,7 +198,7 @@ export default function LoginPage() {
                   }}
                   className="text-secondary-lajoy font-semibold hover:underline underline-offset-4 decoration-primary-container decoration-4"
                 >
-                  {isSignUp ? "Sign in" : "Create one here"}
+                  {isSignUp ? "Inloggen" : "Maak er een aan"}
                 </button>
               </p>
             </div>
@@ -218,7 +218,7 @@ export default function LoginPage() {
             </p>
           </div>
           <a className="font-label text-xs tracking-widest uppercase text-on-surface-variant hover:text-secondary-lajoy transition-all underline decoration-primary-container decoration-0 hover:decoration-2 underline-offset-8" href="mailto:support@lajoys.com">
-            Support
+            Ondersteuning
           </a>
         </div>
       </footer>
