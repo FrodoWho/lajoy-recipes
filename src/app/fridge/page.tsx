@@ -303,8 +303,18 @@ export default function FridgePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left: Fridge Items */}
-          <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28 space-y-6">
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-28 space-y-5">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary" aria-hidden="true">kitchen</span>
+                <h2 className="font-heading text-xl font-bold text-on-surface">In mijn koelkast</h2>
+                {fridgeItems.length > 0 && (
+                  <span className="font-label text-xs bg-primary-container text-on-primary-container px-2.5 py-0.5 rounded-full font-semibold">
+                    {fridgeItems.length}
+                  </span>
+                )}
+              </div>
+
               {/* Add item form with autocomplete */}
               <form onSubmit={handleSubmit} className="relative">
                 <div className="flex gap-3">
@@ -320,13 +330,13 @@ export default function FridgePage() {
                     onFocus={() => setShowSuggestions(true)}
                     onKeyDown={handleKeyDown}
                     placeholder="Bijv. kipfilet, olijfolie, knoflook..."
-                    className="flex-grow bg-surface-container-highest border-none rounded-full py-3 px-5 text-sm font-label outline-none focus:ring-2 focus:ring-primary/30"
+                    className="flex-grow bg-surface-container-highest border-none rounded-full py-3.5 px-5 text-sm font-label outline-none focus:ring-2 focus:ring-primary/30"
                     aria-label="Ingrediënt toevoegen"
                     autoComplete="off"
                   />
                   <button
                     type="submit"
-                    className="bg-primary text-white px-5 py-3 rounded-full font-label text-sm font-medium hover:opacity-90 transition-all active:scale-95 shrink-0"
+                    className="bg-primary text-white px-5 py-3.5 rounded-full font-label text-sm font-medium hover:opacity-90 transition-all active:scale-95 shrink-0"
                     aria-label="Toevoegen"
                   >
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">add</span>
@@ -413,7 +423,7 @@ export default function FridgePage() {
                     </div>
                   )}
 
-                  <div className="max-h-[400px] overflow-y-auto">
+                  <div className="max-h-[500px] overflow-y-auto">
                     {fridgeItems
                       .filter((item) =>
                         !fridgeSearch || item.name.toLowerCase().includes(fridgeSearch.toLowerCase())
@@ -421,12 +431,12 @@ export default function FridgePage() {
                       .map((item, i, arr) => (
                         <div
                           key={item.id}
-                          className={`flex items-center gap-3 px-4 py-2.5 group hover:bg-surface-container-high/50 transition-colors ${
+                          className={`flex items-center gap-3 px-4 py-3 group hover:bg-surface-container-high/50 transition-colors ${
                             i < arr.length - 1 ? "border-b border-outline-variant/10" : ""
                           }`}
                         >
                           <span className="material-symbols-outlined text-sm text-primary-fixed-dim" aria-hidden="true">check_circle</span>
-                          <span className="flex-grow font-label text-sm text-on-surface truncate">{item.name}</span>
+                          <span className="flex-grow font-label text-sm sm:text-base text-on-surface truncate">{item.name}</span>
                           <button
                             onClick={() => removeItem(item.id)}
                             className="p-1 rounded-full hover:bg-error-container/50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
@@ -450,7 +460,7 @@ export default function FridgePage() {
           </div>
 
           {/* Right: Recipe Matches */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-7">
             {fridgeItems.length === 0 ? (
               <div className="text-center py-16">
                 <span className="material-symbols-outlined text-6xl text-outline-variant/30 mb-4" aria-hidden="true">grocery</span>
@@ -494,18 +504,18 @@ export default function FridgePage() {
             ) : (
               <div className="space-y-10">
                 {/* Summary */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-primary-container/20 px-5 py-3 rounded-xl">
-                    <span className="text-2xl font-heading font-bold text-primary">{readyToCook.length}</span>
-                    <span className="font-label text-xs text-on-surface-variant ml-2">klaar om te koken</span>
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                  <div className="bg-primary-container/20 px-4 sm:px-6 py-4 sm:py-5 rounded-xl text-center">
+                    <p className="text-3xl sm:text-4xl font-heading font-bold text-primary">{readyToCook.length}</p>
+                    <p className="font-label text-xs sm:text-sm text-on-surface-variant mt-1">klaar om te koken</p>
                   </div>
-                  <div className="bg-surface-container-highest px-5 py-3 rounded-xl">
-                    <span className="text-2xl font-heading font-bold text-on-surface-variant">{almostThere.length}</span>
-                    <span className="font-label text-xs text-on-surface-variant ml-2">bijna compleet</span>
+                  <div className="bg-surface-container-highest px-4 sm:px-6 py-4 sm:py-5 rounded-xl text-center">
+                    <p className="text-3xl sm:text-4xl font-heading font-bold text-on-surface-variant">{almostThere.length}</p>
+                    <p className="font-label text-xs sm:text-sm text-on-surface-variant mt-1">bijna compleet</p>
                   </div>
-                  <div className="bg-surface-container-highest px-5 py-3 rounded-xl">
-                    <span className="text-2xl font-heading font-bold text-on-surface-variant">{recipes.length - recipeMatches.length}</span>
-                    <span className="font-label text-xs text-on-surface-variant ml-2">geen match</span>
+                  <div className="bg-surface-container-highest px-4 sm:px-6 py-4 sm:py-5 rounded-xl text-center">
+                    <p className="text-3xl sm:text-4xl font-heading font-bold text-on-surface-variant">{recipes.length - recipeMatches.length}</p>
+                    <p className="font-label text-xs sm:text-sm text-on-surface-variant mt-1">geen match</p>
                   </div>
                 </div>
 
