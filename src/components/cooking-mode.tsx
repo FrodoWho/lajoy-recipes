@@ -97,7 +97,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[200] bg-on-surface flex flex-col select-none"
+      className="fixed inset-0 z-[200] bg-surface flex flex-col select-none"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       role="dialog"
@@ -166,7 +166,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
       {/* Backdrop for ingredients panel */}
       {ingredientsOpen && (
         <div
-          className="fixed inset-0 z-[205] bg-on-surface/40"
+          className="fixed inset-0 z-[205] bg-on-surface/20"
           onClick={() => setIngredientsOpen(false)}
         />
       )}
@@ -175,7 +175,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
       <div className="flex items-center justify-between px-5 py-4 shrink-0">
         <button
           onClick={() => setIngredientsOpen(true)}
-          className="flex items-center gap-2 text-surface/70 hover:text-surface transition-colors p-2 -ml-2 rounded-lg"
+          className="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors p-2 -ml-2 rounded-lg"
           aria-label="Toon ingrediënten"
         >
           <span className="material-symbols-outlined" aria-hidden="true">menu_book</span>
@@ -183,14 +183,14 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
         </button>
 
         <div className="text-center">
-          <p className="font-label text-xs text-surface/50 uppercase tracking-widest truncate max-w-48">
+          <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest truncate max-w-48">
             {recipe.title}
           </p>
         </div>
 
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-surface/70 hover:text-surface transition-colors p-2 -mr-2 rounded-lg"
+          className="flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors p-2 -mr-2 rounded-lg"
           aria-label="Sluit kookmodus"
         >
           <span className="font-label text-xs uppercase tracking-widest hidden sm:inline">Sluiten</span>
@@ -200,17 +200,17 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
 
       {/* Progress bar */}
       <div className="px-5 shrink-0">
-        <div className="h-1 bg-surface/10 rounded-full overflow-hidden">
+        <div className="h-1 bg-outline-variant/30 rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary-container rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
         <div className="flex justify-between mt-2">
-          <span className="font-label text-[10px] text-surface/30">
+          <span className="font-label text-[10px] text-on-surface-variant/60">
             {currentStepNum ? `Stap ${currentStepNum} van ${totalSteps}` : ""}
           </span>
-          <span className="font-label text-[10px] text-surface/30">
+          <span className="font-label text-[10px] text-on-surface-variant/60">
             {Math.round(progress)}%
           </span>
         </div>
@@ -221,17 +221,17 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
         <div className="max-w-2xl w-full text-center">
           {isSection ? (
             <div>
-              <span className="material-symbols-outlined text-5xl text-primary-container/60 mb-6" aria-hidden="true">bookmark</span>
-              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-surface leading-tight">
+              <span className="material-symbols-outlined text-5xl text-primary/60 mb-6" aria-hidden="true">bookmark</span>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-on-surface leading-tight">
                 {getSectionTitle(steps[currentIdx])}
               </h2>
             </div>
           ) : (
             <div>
-              <span className="font-heading text-6xl sm:text-8xl text-primary-container/20 block mb-6">
+              <span className="font-heading text-6xl sm:text-8xl text-primary/20 block mb-6">
                 {String(currentStepNum).padStart(2, "0")}
               </span>
-              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed text-surface/90 font-sans">
+              <p className="text-xl sm:text-2xl md:text-3xl leading-relaxed text-on-surface font-sans">
                 {formatRichText(steps[currentIdx])}
               </p>
             </div>
@@ -242,7 +242,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
       {/* Bottom navigation */}
       <div className="px-5 pb-6 pt-4 shrink-0">
         {/* Swipe hint */}
-        <p className="text-center font-label text-[10px] text-surface/20 uppercase tracking-widest mb-4 sm:hidden">
+        <p className="text-center font-label text-[10px] text-on-surface-variant/40 uppercase tracking-widest mb-4 sm:hidden">
           Swipe om te navigeren
         </p>
 
@@ -250,7 +250,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
           <button
             onClick={goPrev}
             disabled={currentIdx === 0}
-            className="flex items-center gap-2 px-6 py-4 rounded-full bg-surface/10 text-surface hover:bg-surface/20 transition-all active:scale-95 disabled:opacity-20 disabled:pointer-events-none"
+            className="flex items-center gap-2 px-6 py-4 rounded-full bg-surface-container-highest text-on-surface hover:bg-outline-variant/30 transition-all active:scale-95 disabled:opacity-20 disabled:pointer-events-none"
           >
             <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
             <span className="font-label text-sm hidden sm:inline">Vorige</span>
@@ -264,10 +264,10 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
                 onClick={() => setCurrentIdx(i)}
                 className={`shrink-0 rounded-full transition-all duration-300 ${
                   i === currentIdx
-                    ? "w-6 h-2 bg-primary-container"
+                    ? "w-6 h-2 bg-primary"
                     : i < currentIdx
-                    ? "w-2 h-2 bg-surface/40"
-                    : "w-2 h-2 bg-surface/15"
+                    ? "w-2 h-2 bg-primary/40"
+                    : "w-2 h-2 bg-outline-variant/30"
                 }`}
                 aria-label={`Ga naar stap ${i + 1}`}
               />
@@ -279,7 +279,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
             className={`flex items-center gap-2 px-6 py-4 rounded-full transition-all active:scale-95 ${
               currentIdx === steps.length - 1
                 ? "bg-primary text-white hover:opacity-90"
-                : "bg-surface/10 text-surface hover:bg-surface/20"
+                : "bg-surface-container-highest text-on-surface hover:bg-outline-variant/30"
             }`}
           >
             <span className="font-label text-sm hidden sm:inline">
