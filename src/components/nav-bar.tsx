@@ -92,9 +92,9 @@ export function NavBar({ onSignOut }: NavBarProps) {
                 <span className="material-symbols-outlined text-primary" aria-hidden="true">logout</span>
               </button>
             )}
-            <button className="hidden sm:flex p-2 rounded-full hover:bg-primary-container/20 transition-colors" aria-label="Account instellingen">
+            <Link href="/profile" className="hidden sm:flex p-2 rounded-full hover:bg-primary-container/20 transition-colors" aria-label="Account instellingen">
               <span className="material-symbols-outlined text-primary" aria-hidden="true">account_circle</span>
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -152,10 +152,10 @@ export function NavBar({ onSignOut }: NavBarProps) {
 
             {/* Bottom */}
             <div className="border-t border-outline-variant/20 p-4 space-y-2">
-              <button className="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-label text-sm">
+              <Link href="/profile" onClick={closeMenu} className="flex items-center gap-4 w-full px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-label text-sm">
                 <span className="material-symbols-outlined text-xl" aria-hidden="true">account_circle</span>
                 Account
-              </button>
+              </Link>
               {onSignOut && (
                 <button
                   onClick={() => { onSignOut(); closeMenu(); }}
