@@ -112,38 +112,65 @@ export default function RecipeDetailPage({
         <section className="max-w-screen-2xl mx-auto px-4 sm:px-8 mb-12 md:mb-28">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end">
             <div className="lg:col-span-7">
-              <nav className="mb-8 flex items-center justify-between">
-                <Link
-                  href="/"
-                  className="font-label text-xs uppercase tracking-[0.2em] text-secondary-lajoy flex items-center gap-2 group"
-                >
-                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1" aria-hidden="true">
-                    arrow_back
-                  </span>
-                  Terug naar recepten
-                </Link>
-                <div className="flex items-center gap-4">
+              <nav className="mb-8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Link
+                    href="/"
+                    className="font-label text-xs uppercase tracking-[0.2em] text-secondary-lajoy flex items-center gap-2 group"
+                  >
+                    <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1" aria-hidden="true">
+                      arrow_back
+                    </span>
+                    Terug naar recepten
+                  </Link>
+                  {/* Desktop actions */}
+                  <div className="hidden sm:flex items-center gap-4 print:hidden">
+                    <button
+                      onClick={() => setCookingMode(true)}
+                      className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity bg-primary-container/30 px-3 py-1.5 rounded-full"
+                    >
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">skillet</span>
+                      Kookmodus
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2 hover:opacity-70 transition-opacity"
+                    >
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">print</span>
+                      Afdrukken
+                    </button>
+                    <Link
+                      href={`/recipes/${recipe.id}/edit`}
+                      className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity"
+                    >
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                      Bewerken
+                    </Link>
+                  </div>
+                </div>
+                {/* Mobile actions — icon buttons */}
+                <div className="flex sm:hidden items-center gap-2 print:hidden">
                   <button
                     onClick={() => setCookingMode(true)}
-                    className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden bg-primary-container/30 px-3 py-1.5 rounded-full"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-primary-container/30 text-primary font-label text-xs font-semibold uppercase tracking-wider"
                   >
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">skillet</span>
-                    Kookmodus
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
-                  >
-                    <span className="material-symbols-outlined text-sm" aria-hidden="true">print</span>
-                    Afdrukken
+                    Koken
                   </button>
                   <Link
                     href={`/recipes/${recipe.id}/edit`}
-                    className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-surface-container-highest text-on-surface-variant font-label text-xs font-semibold uppercase tracking-wider"
                   >
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
                     Bewerken
                   </Link>
+                  <button
+                    onClick={() => window.print()}
+                    className="p-3 rounded-full bg-surface-container-highest text-on-surface-variant"
+                    aria-label="Afdrukken"
+                  >
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">print</span>
+                  </button>
                 </div>
               </nav>
 
