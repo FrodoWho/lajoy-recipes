@@ -36,7 +36,7 @@ const AISLE_ORDER: { label: string; emoji: string; keywords: string[] }[] = [
       "crème fraîche", "zure room", "yoghurt", "kwark", "karnemelk",
       "boter", "margarine", "ei", "eieren", "kaas", "mozzarella", "parmezaan",
       "cheddar", "geitenkaas", "brie", "ricotta", "mascarpone", "feta",
-      "roomkaas", "cottage cheese",
+      "roomkaas", "cottage cheese", "bakspray",
     ],
   },
   {
@@ -90,10 +90,11 @@ const AISLE_ORDER: { label: string; emoji: string; keywords: string[] }[] = [
     emoji: "🧁",
     keywords: [
       "bloem", "zelfrijzend", "bakpoeder", "bakingsoda", "gist",
-      "suiker", "basterdsuiker", "poedersuiker", "vanille", "vanillesuiker",
-      "cacao", "cacaopoeder", "chocolade", "chocoladechips", "kokos",
-      "kokosrasp", "amandelmeel", "maizena", "amandelschaafsel",
-      "gelatine", "glazuur",
+      "suiker", "basterdsuiker", "bruine suiker", "donkerbruine basterdsuiker",
+      "poedersuiker", "vanille", "vanillesuiker", "vanille-extract",
+      "cacao", "cacaopoeder", "chocolade", "chocoladechips", "chocoladereep",
+      "kokos", "kokosrasp", "amandelmeel", "maizena", "amandelschaafsel",
+      "gelatine", "glazuur", "bakspray",
     ],
   },
   {
@@ -138,7 +139,25 @@ interface CategorizedItem {
 }
 
 function normalizeForMatch(text: string): string {
-  return text.toLowerCase().replace(/[,()]/g, "").replace(/\d+\s*(g|kg|ml|l|dl|cl|el|tl|eetlepel|theelepel|snufje|teen|stuk)\s*/gi, "").trim();
+  return text
+    .toLowerCase()
+    .replace(/[,()]/g, "")
+    .replace(/[\d./]+\s*(g|kg|ml|l|dl|cl|el|tl|eetlepel|theelepel|snufje|teen|stuk|stuks)\s*/gi, "")
+    // Strip preparation adjectives that could cause false matches
+    .replace(/\b(fijngehakt|fijngehakte|gehakte|gesneden|geraspt|geraspte|geschaafd|geschaafde|gepeld|gepelde|gepureerd|gepureerde|gedroogd|gedroogde|geroosterd|geroosterde|gebakken|gekookt|gekookte|halfzoete|bitterzoete|ongezouten|gezouten|vers|verse|grote|groot|kleine|klein)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Check if a keyword matches as a whole word in text */
+function wordMatch(text: string, keyword: string): boolean {
+  // Use word boundary regex for single words
+  if (!keyword.includes(" ")) {
+    const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+    return regex.test(text);
+  }
+  // Multi-word keywords: check if the full phrase appears
+  return text.includes(keyword);
 }
 
 export function categorizeIngredients(ingredients: string[]): CategorizedItem[] {
@@ -150,7 +169,7 @@ export function categorizeIngredients(ingredients: string[]): CategorizedItem[] 
     let matched = false;
 
     for (const aisle of AISLE_ORDER) {
-      if (aisle.keywords.some((kw) => normalized.includes(kw) || kw.includes(normalized.split(" ")[0]))) {
+      if (aisle.keywords.some((kw) => wordMatch(normalized, kw))) {
         if (!categorized.has(aisle.label)) {
           categorized.set(aisle.label, { emoji: aisle.emoji, items: [] });
         }
