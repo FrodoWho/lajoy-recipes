@@ -21,7 +21,7 @@ export function RecipeCard({
 }: RecipeCardProps) {
   const router = useRouter();
   const totalTime =
-    (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0) || null;
+    (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0) + (recipe.fermentation_time ?? 0) || null;
 
   function formatTime(minutes: number): string {
     if (minutes >= 60) {

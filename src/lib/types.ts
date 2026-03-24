@@ -17,6 +17,7 @@ export interface Recipe {
   category: RecipeCategory;
   prep_time: number | null;
   cook_time: number | null;
+  fermentation_time: number | null;
   servings: number | null;
   ingredients: string[];
   instructions: string[];

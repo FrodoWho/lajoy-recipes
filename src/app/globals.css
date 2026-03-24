@@ -183,3 +183,63 @@ select:focus-visible {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
 }
+
+/* Print styles */
+@media print {
+  nav, footer, .glass-nav, .print\:hidden {
+    display: none !important;
+  }
+
+  body, main, .bg-surface, .bg-surface-container-low,
+  .bg-surface-container-highest, .bg-surface-container-lowest {
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  img {
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .text-on-surface-variant, .text-outline, .text-secondary-lajoy {
+    color: #333 !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  .line-through {
+    text-decoration: none !important;
+  }
+
+  .opacity-40 {
+    opacity: 1 !important;
+  }
+
+  .grid {
+    display: block !important;
+  }
+
+  aside, [class*="col-span"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  h1 { font-size: 2rem !important; }
+  h2 { break-after: avoid; }
+
+  .sticky {
+    position: static !important;
+  }
+
+  a[href] {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+}

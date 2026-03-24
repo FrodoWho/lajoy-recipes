@@ -8,6 +8,7 @@ import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Recipe } from "@/lib/types";
 import { categoryLabels } from "@/lib/types";
+import { formatRichText, isSectionHeader, getSectionTitle } from "@/lib/format-text";
 import Link from "next/link";
 
 export default function RecipeDetailPage({
@@ -97,7 +98,7 @@ export default function RecipeDetailPage({
 
   if (!recipe) return null;
 
-  const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0) || null;
+  const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0) + (recipe.fermentation_time ?? 0) || null;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -119,13 +120,22 @@ export default function RecipeDetailPage({
                   </span>
                   Terug naar recepten
                 </Link>
-                <Link
-                  href={`/recipes/${recipe.id}/edit`}
-                  className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity"
-                >
-                  <span className="material-symbols-outlined text-sm">edit</span>
-                  Bewerken
-                </Link>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => window.print()}
+                    className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
+                  >
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">print</span>
+                    Afdrukken
+                  </button>
+                  <Link
+                    href={`/recipes/${recipe.id}/edit`}
+                    className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    Bewerken
+                  </Link>
+                </div>
               </nav>
 
               <h1 className="text-3xl sm:text-5xl lg:text-7xl font-heading font-bold text-on-surface leading-[1.1] mb-8 tracking-tight">
@@ -145,6 +155,12 @@ export default function RecipeDetailPage({
                     <span className="font-label text-sm font-medium">{recipe.cook_time} min koken</span>
                   </div>
                 )}
+                {recipe.fermentation_time != null && (
+                  <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
+                    <span className="material-symbols-outlined text-primary" aria-hidden="true">hourglass_top</span>
+                    <span className="font-label text-sm font-medium">{recipe.fermentation_time} min rijzen</span>
+                  </div>
+                )}
                 {recipe.servings != null && (
                   <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
                     <span className="material-symbols-outlined text-primary" aria-hidden="true">group</span>
@@ -158,7 +174,7 @@ export default function RecipeDetailPage({
                 </div>
                 <button
                   onClick={handleToggleFavorite}
-                  className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full hover:bg-secondary-container/30 transition-colors"
+                  className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full hover:bg-secondary-container/30 transition-colors print:hidden"
                   aria-label={recipe.is_favorite ? "Verwijderen uit favorieten" : "Toevoegen aan favorieten"}
                 >
                   <span
@@ -221,8 +237,17 @@ export default function RecipeDetailPage({
                     Ingrediënten
                     <span className="h-[1px] flex-grow bg-outline-variant/30" aria-hidden="true" />
                   </h2>
-                  <ul className="space-y-4 font-sans text-lg">
+                  <ul className="space-y-3 font-sans text-lg">
                     {recipe.ingredients.map((ing, i) => {
+                      if (isSectionHeader(ing)) {
+                        return (
+                          <li key={i} className="pt-4 first:pt-0">
+                            <h3 className="font-heading text-base font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-2">
+                              {getSectionTitle(ing)}
+                            </h3>
+                          </li>
+                        );
+                      }
                       const checked = checkedIngredients.has(i);
                       return (
                         <li
@@ -232,9 +257,7 @@ export default function RecipeDetailPage({
                         >
                           <span
                             className={`material-symbols-outlined mt-1 transition-all shrink-0 ${
-                              checked
-                                ? "text-primary"
-                                : "text-outline-variant group-hover:text-primary-fixed-dim"
+                              checked ? "text-primary" : "text-outline-variant group-hover:text-primary-fixed-dim"
                             }`}
                             style={checked ? { fontVariationSettings: "'FILL' 1" } : undefined}
                             aria-hidden="true"
@@ -242,7 +265,7 @@ export default function RecipeDetailPage({
                             {checked ? "check_circle" : "circle"}
                           </span>
                           <span className={`transition-all ${checked ? "line-through text-on-surface-variant/40" : ""}`}>
-                            {ing}
+                            {formatRichText(ing)}
                           </span>
                         </li>
                       );
@@ -258,8 +281,10 @@ export default function RecipeDetailPage({
                   </h3>
                   <p className="text-sm font-sans italic leading-relaxed">
                     {totalTime} minuten van begin tot eind.
-                    {recipe.prep_time && recipe.cook_time && (
-                      <> Dat is {recipe.prep_time} min voorbereiding + {recipe.cook_time} min koken.</>
+                    {(recipe.prep_time || recipe.cook_time || recipe.fermentation_time) && (
+                      <> Dat is{recipe.prep_time ? ` ${recipe.prep_time} min voorbereiding` : ""}
+                      {recipe.cook_time ? `${recipe.prep_time ? " +" : ""} ${recipe.cook_time} min koken` : ""}
+                      {recipe.fermentation_time ? `${(recipe.prep_time || recipe.cook_time) ? " +" : ""} ${recipe.fermentation_time} min rijzen` : ""}.</>
                     )}
                   </p>
                 </div>
@@ -276,47 +301,61 @@ export default function RecipeDetailPage({
                   <span className="h-[1px] flex-grow bg-outline-variant/30" aria-hidden="true" />
                 </h2>
                 <div className="space-y-12">
-                  {recipe.instructions.map((step, i) => {
-                    const checked = checkedSteps.has(i);
-                    return (
-                      <div
-                        key={i}
-                        className={`flex gap-6 md:gap-8 items-start cursor-pointer group transition-all ${
-                          checked ? "opacity-40" : ""
-                        }`}
-                        onClick={() => toggleStep(i)}
-                      >
-                        <div className="shrink-0 flex flex-col items-center gap-2">
-                          <span className={`font-heading text-3xl md:text-6xl transition-colors shrink-0 ${
-                            checked ? "text-primary/30" : "text-secondary-lajoy/10 group-hover:text-secondary-lajoy/20"
-                          }`}>
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span
-                            className={`material-symbols-outlined transition-all ${
-                              checked ? "text-primary" : "text-outline-variant/30 group-hover:text-outline-variant/60"
-                            }`}
-                            style={checked ? { fontVariationSettings: "'FILL' 1" } : undefined}
-                            aria-hidden="true"
-                          >
-                            {checked ? "check_circle" : "radio_button_unchecked"}
-                          </span>
+                  {(() => {
+                    let stepNum = 0;
+                    return recipe.instructions.map((step, i) => {
+                      if (isSectionHeader(step)) {
+                        return (
+                          <div key={i} className="pt-4 first:pt-0">
+                            <h3 className="font-heading text-xl font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-3">
+                              {getSectionTitle(step)}
+                            </h3>
+                          </div>
+                        );
+                      }
+                      stepNum++;
+                      const currentStep = stepNum;
+                      const checked = checkedSteps.has(i);
+                      return (
+                        <div
+                          key={i}
+                          className={`flex gap-6 md:gap-8 items-start cursor-pointer group transition-all ${
+                            checked ? "opacity-40" : ""
+                          }`}
+                          onClick={() => toggleStep(i)}
+                        >
+                          <div className="shrink-0 flex flex-col items-center gap-2">
+                            <span className={`font-heading text-3xl md:text-6xl transition-colors shrink-0 ${
+                              checked ? "text-primary/30" : "text-secondary-lajoy/10 group-hover:text-secondary-lajoy/20"
+                            }`}>
+                              {String(currentStep).padStart(2, "0")}
+                            </span>
+                            <span
+                              className={`material-symbols-outlined transition-all ${
+                                checked ? "text-primary" : "text-outline-variant/30 group-hover:text-outline-variant/60"
+                              }`}
+                              style={checked ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                              aria-hidden="true"
+                            >
+                              {checked ? "check_circle" : "radio_button_unchecked"}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className={`font-heading text-xl font-bold mb-3 transition-all ${
+                              checked ? "line-through" : ""
+                            }`}>
+                              Stap {currentStep}
+                            </h3>
+                            <p className={`text-lg leading-relaxed font-sans transition-all ${
+                              checked ? "line-through text-on-surface-variant/40" : "text-on-surface-variant"
+                            }`}>
+                              {formatRichText(step)}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className={`font-heading text-xl font-bold mb-3 transition-all ${
-                            checked ? "line-through" : ""
-                          }`}>
-                            Stap {i + 1}
-                          </h3>
-                          <p className={`text-lg leading-relaxed font-sans transition-all ${
-                            checked ? "line-through text-on-surface-variant/40" : "text-on-surface-variant"
-                          }`}>
-                            {step}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             )}
