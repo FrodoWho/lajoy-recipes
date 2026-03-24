@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Recipe } from "@/lib/types";
 import { categoryLabels } from "@/lib/types";
+import { isSectionHeader } from "@/lib/format-text";
 
 interface FridgeItem {
   id: string;
@@ -31,7 +32,7 @@ interface RecipeMatch {
  */
 function normalizeIngredient(raw: string): string {
   const units = "g|gr|gram|kg|kilo|ml|l|dl|cl|oz|lb|tsp|tbsp|el|tl|eetlepel|eetlepels|theelepel|theelepels|cup|cups|snuf|snufje|bos|bosje|teen|tenen|stuk|stuks|plak|plakken|schijf|schijven|blad|blaadjes|takje|takjes|handvol|handjevol";
-  const adjectives = "naar smaak|optioneel|vers|verse|gedroogd|gedroogde|gemalen|gehakt|gehakte|gesneden|in blokjes|in plakjes|in stukjes|in reepjes|fijngehakt|fijngehakte|geraspt|geraspte|bijgesneden|geplet|geschaafd|geschaafde|met vel|uitgelekt|gepureerd|grote|groot|kleine|klein|halve|half";
+  const adjectives = "naar smaak|optioneel|vers|verse|gedroogd|gedroogde|gemalen|gehakt|gehakte|gesneden|in blokjes|in plakjes|in stukjes|in reepjes|fijngehakt|fijngehakte|geraspt|geraspte|bijgesneden|geplet|geschaafd|geschaafde|met vel|uitgelekt|gepureerd|grote|groot|kleine|klein|halve|half|ongezouten|gezouten|extra vierge|biologisch|biologische|roomtemperatuur|kamertemperatuur";
 
   return raw
     .toLowerCase()
@@ -115,11 +116,12 @@ export default function FridgePage() {
   }, [fetchData]);
 
   // Extract unique ingredient names from all recipes for suggestions
+  // Extract unique ingredient names from all recipes, excluding section headers
   const allRecipeIngredients = useMemo(() => {
     const set = new Set<string>();
     recipes.forEach((r) => {
       r.ingredients?.forEach((ing) => {
-        set.add(ing);
+        if (!isSectionHeader(ing)) set.add(ing);
       });
     });
     return Array.from(set).sort();
@@ -230,7 +232,10 @@ export default function FridgePage() {
         const matched: string[] = [];
         const missing: string[] = [];
 
-        recipe.ingredients.forEach((ing) => {
+        // Filter out section headers — they aren't real ingredients
+        const realIngredients = recipe.ingredients.filter((ing) => !isSectionHeader(ing));
+
+        realIngredients.forEach((ing) => {
           const isMatched = fridgeNames.some((fridgeItem) =>
             ingredientMatches(fridgeItem, ing)
           );
@@ -242,8 +247,8 @@ export default function FridgePage() {
         });
 
         const percentage =
-          recipe.ingredients.length > 0
-            ? Math.round((matched.length / recipe.ingredients.length) * 100)
+          realIngredients.length > 0
+            ? Math.round((matched.length / realIngredients.length) * 100)
             : 0;
 
         return { recipe, matched, missing, percentage };
