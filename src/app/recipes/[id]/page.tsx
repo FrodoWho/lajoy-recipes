@@ -90,7 +90,7 @@ export default function RecipeDetailPage({
       <div className="min-h-screen bg-surface flex flex-col">
         <NavBar onSignOut={handleSignOut} />
         <div className="flex-grow flex items-center justify-center pt-28">
-          <span className="material-symbols-outlined text-5xl text-primary-container animate-pulse">
+          <span className="material-symbols-outlined text-5xl text-primary-container animate-pulse" aria-hidden="true">
             skillet
           </span>
         </div>
@@ -117,7 +117,7 @@ export default function RecipeDetailPage({
                   href="/"
                   className="font-label text-xs uppercase tracking-[0.2em] text-secondary-lajoy flex items-center gap-2 group"
                 >
-                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
+                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1" aria-hidden="true">
                     arrow_back
                   </span>
                   Terug naar recepten
@@ -141,7 +141,7 @@ export default function RecipeDetailPage({
                     href={`/recipes/${recipe.id}/edit`}
                     className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
                   >
-                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
                     Bewerken
                   </Link>
                 </div>
@@ -189,6 +189,7 @@ export default function RecipeDetailPage({
                   <span
                     className={`material-symbols-outlined text-secondary-lajoy`}
                     style={recipe.is_favorite ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    aria-hidden="true"
                   >
                     favorite
                   </span>
@@ -215,7 +216,7 @@ export default function RecipeDetailPage({
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary-container via-surface-container-low to-secondary-container flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[120px] text-primary/20">
+                    <span className="material-symbols-outlined text-[120px] text-primary/20" aria-hidden="true">
                       restaurant
                     </span>
                   </div>
@@ -368,6 +369,37 @@ export default function RecipeDetailPage({
                 </div>
               </div>
             )}
+          {/* Tip boxes after all steps */}
+          {(recipe.notes || recipe.shelf_life) && (
+            <div className="md:col-span-8 md:col-start-5 mt-8 space-y-4">
+              {recipe.notes && (
+                <div className="bg-primary-container/20 rounded-2xl p-8 border border-primary-container/30">
+                  <div className="flex items-start gap-4">
+                    <span className="material-symbols-outlined text-2xl text-primary shrink-0 mt-0.5" aria-hidden="true">lightbulb</span>
+                    <div>
+                      <h3 className="font-heading text-lg font-bold text-on-surface mb-3">Tips &amp; Notities</h3>
+                      <p className="text-on-surface-variant leading-relaxed font-sans">
+                        {formatRichText(recipe.notes)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {recipe.shelf_life && (
+                <div className="bg-secondary-container/15 rounded-2xl p-8 border border-secondary-container/30">
+                  <div className="flex items-start gap-4">
+                    <span className="material-symbols-outlined text-2xl text-secondary-lajoy shrink-0 mt-0.5" aria-hidden="true">kitchen</span>
+                    <div>
+                      <h3 className="font-heading text-lg font-bold text-on-surface mb-3">Houdbaarheid</h3>
+                      <p className="text-on-surface-variant leading-relaxed font-sans">
+                        {formatRichText(recipe.shelf_life)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           </div>
         </section>
       </main>

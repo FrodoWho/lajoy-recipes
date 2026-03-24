@@ -100,12 +100,18 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
       className="fixed inset-0 z-[200] bg-on-surface flex flex-col select-none"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Kookmodus: ${recipe.title}`}
     >
       {/* Ingredients slide-out panel */}
       <div
         className={`fixed inset-y-0 left-0 z-[210] w-80 max-w-[85vw] bg-surface shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
           ingredientsOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        role="dialog"
+        aria-label="Ingrediënten paneel"
+        aria-hidden={!ingredientsOpen}
       >
         <div className="flex items-center justify-between p-5 border-b border-outline-variant/20">
           <h2 className="font-heading text-lg font-bold text-on-surface">Ingrediënten</h2>
@@ -211,7 +217,7 @@ export function CookingMode({ recipe, onClose }: CookingModeProps) {
       </div>
 
       {/* Main step content */}
-      <div className="flex-grow flex items-center justify-center px-8 py-6 min-h-0">
+      <div className="flex-grow flex items-center justify-center px-8 py-6 min-h-0" aria-live="polite">
         <div className="max-w-2xl w-full text-center">
           {isSection ? (
             <div>

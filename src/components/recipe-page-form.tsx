@@ -48,6 +48,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
     recipe?.instructions?.length ? recipe.instructions : ["", ""]
   );
   const [notes, setNotes] = useState(recipe?.notes ?? "");
+  const [shelfLife, setShelfLife] = useState(recipe?.shelf_life ?? "");
   const [imageUrl, setImageUrl] = useState(recipe?.image_url ?? "");
   const [imagePreview, setImagePreview] = useState(recipe?.image_url ?? "");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -153,6 +154,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
       ingredients: filteredIngredients,
       instructions: filteredInstructions,
       notes: notes || null,
+      shelf_life: shelfLife || null,
       image_url: uploadedUrl,
       updated_at: new Date().toISOString(),
     };
@@ -221,24 +223,24 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                       <div className="absolute inset-0 bg-on-surface/0 group-hover:bg-on-surface/30 transition-colors flex items-center justify-center">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-3">
                           <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="p-3 rounded-full bg-surface/90 text-on-surface hover:bg-surface transition-colors" aria-label="Afbeelding wijzigen">
-                            <span className="material-symbols-outlined">edit</span>
+                            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
                           </button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); removeImage(); }} className="p-3 rounded-full bg-surface/90 text-error-lajoy hover:bg-error-container transition-colors" aria-label="Afbeelding verwijderen">
-                            <span className="material-symbols-outlined">delete</span>
+                            <span className="material-symbols-outlined" aria-hidden="true">delete</span>
                           </button>
                         </div>
                       </div>
                     </>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                      <span className="material-symbols-outlined text-4xl text-outline mb-4">add_a_photo</span>
+                      <span className="material-symbols-outlined text-4xl text-outline mb-4" aria-hidden="true">add_a_photo</span>
                       <p className="font-label text-sm text-on-surface-variant">Upload Afbeelding</p>
                       <p className="font-label text-[10px] text-outline mt-2 uppercase tracking-widest">JPG, PNG, WebP tot 5MB</p>
                     </div>
                   )}
                   {uploading && (
                     <div className="absolute inset-0 bg-surface/80 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
+                      <span className="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">progress_activity</span>
                     </div>
                   )}
                 </div>
@@ -253,7 +255,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                       ))}
                     </select>
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-3">Voorbereidingstijd</label>
                       <input className="w-full bg-surface-container-highest border-none rounded-lg font-label text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 outline-none" placeholder="20 min" type="text" value={prepTime} onChange={(e) => setPrepTime(e.target.value)} />
@@ -454,13 +456,25 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
 
                 {/* Notes */}
                 <section>
-                  <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">Notities</label>
+                  <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">Tips &amp; Notities</label>
                   <textarea
                     className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
                     placeholder="Tips, variaties, of verhalen over dit recept..."
                     value={notes}
                     onChange={(e) => { setNotes(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
                     ref={(el) => { if (el && notes) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }}
+                  />
+                </section>
+
+                {/* Shelf Life */}
+                <section>
+                  <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">Houdbaarheid</label>
+                  <textarea
+                    className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
+                    placeholder="Bijv. 3 dagen op het aanrecht, 5 dagen in de koelkast, 3 maanden in de vriezer..."
+                    value={shelfLife}
+                    onChange={(e) => { setShelfLife(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    ref={(el) => { if (el && shelfLife) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }}
                   />
                 </section>
               </div>

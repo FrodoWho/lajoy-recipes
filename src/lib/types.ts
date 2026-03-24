@@ -22,6 +22,7 @@ export interface Recipe {
   ingredients: string[];
   instructions: string[];
   notes: string | null;
+  shelf_life: string | null;
   is_favorite: boolean;
   image_url: string | null;
 }
