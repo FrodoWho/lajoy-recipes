@@ -323,22 +323,32 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                           <div
                             onDragOver={(e) => { e.preventDefault(); setIngOverIdx(i); }}
                             onDrop={() => { if (ingDragIdx !== null) setIngredients(reorder(ingredients, ingDragIdx, i)); setIngDragIdx(null); setIngOverIdx(null); }}
-                            className={`flex gap-3 items-center rounded-lg transition-all duration-200 ${
+                            className={`flex gap-2 sm:gap-3 items-center rounded-lg transition-all duration-200 ${
                               isDragging ? "opacity-20 scale-95" : ""
                             } ${isDropTarget ? "bg-primary-container/10" : ""}`}
                           >
+                            {/* Desktop: drag handle */}
                             <div
                               draggable
                               onDragStart={() => setIngDragIdx(i)}
                               onDragEnd={() => { setIngDragIdx(null); setIngOverIdx(null); }}
-                              className="flex items-center gap-0.5 shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 rounded-md hover:bg-surface-container-high transition-colors group/handle"
+                              className="hidden sm:flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 rounded-md hover:bg-surface-container-high transition-colors group/handle"
                               title="Sleep om te verplaatsen"
                             >
                               <span className="material-symbols-outlined text-base text-outline-variant/40 group-hover/handle:text-primary transition-colors" aria-hidden="true">drag_indicator</span>
                             </div>
+                            {/* Mobile: up/down buttons */}
+                            <div className="flex sm:hidden flex-col shrink-0 -ml-1">
+                              <button type="button" disabled={i === 0} onClick={() => setIngredients(reorder(ingredients, i, i - 1))} className="p-0.5 text-outline-variant/40 hover:text-primary disabled:opacity-20 transition-colors" aria-label="Omhoog">
+                                <span className="material-symbols-outlined text-base" aria-hidden="true">keyboard_arrow_up</span>
+                              </button>
+                              <button type="button" disabled={i === ingredients.length - 1} onClick={() => setIngredients(reorder(ingredients, i, i + 1))} className="p-0.5 text-outline-variant/40 hover:text-primary disabled:opacity-20 transition-colors" aria-label="Omlaag">
+                                <span className="material-symbols-outlined text-base" aria-hidden="true">keyboard_arrow_down</span>
+                              </button>
+                            </div>
                           {isSection ? (
                             <input
-                              className="flex-grow bg-primary-container/20 border-none rounded-lg font-label text-sm font-bold py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20"
+                              className="flex-grow bg-primary-container/20 border-none rounded-lg font-label text-sm font-bold py-3 px-3 sm:px-4 outline-none focus:ring-2 focus:ring-primary/20"
                               placeholder="Sectietitel (bijv. Dag 1, Voor het deeg...)"
                               type="text"
                               value={ing.name.slice(3)}
@@ -346,8 +356,8 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                             />
                           ) : (
                             <>
-                              <input className="w-16 sm:w-24 bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20" placeholder="Hvh" type="text" value={ing.qty} onChange={(e) => updateIngredient(i, "qty", e.target.value)} aria-label={`Ingrediënt ${i + 1} hoeveelheid`} />
-                              <input className="flex-grow bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ingrediënt..." type="text" value={ing.name} onChange={(e) => updateIngredient(i, "name", e.target.value)} aria-label={`Ingrediënt ${i + 1} naam`} />
+                              <input className="w-20 sm:w-24 bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-3 sm:px-4 outline-none focus:ring-2 focus:ring-primary/20" placeholder="Hvh" type="text" value={ing.qty} onChange={(e) => updateIngredient(i, "qty", e.target.value)} aria-label={`Ingrediënt ${i + 1} hoeveelheid`} />
+                              <input className="flex-grow bg-surface-container-low border-none rounded-lg font-label text-sm py-3 px-3 sm:px-4 outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ingrediënt..." type="text" value={ing.name} onChange={(e) => updateIngredient(i, "name", e.target.value)} aria-label={`Ingrediënt ${i + 1} naam`} />
                             </>
                           )}
                           {ingredients.length > 1 && (
@@ -392,42 +402,52 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                           <div
                             onDragOver={(e) => { e.preventDefault(); setStepOverIdx(i); }}
                             onDrop={() => { if (stepDragIdx !== null) setInstructions(reorder(instructions, stepDragIdx, i)); setStepDragIdx(null); setStepOverIdx(null); }}
-                            className={`flex gap-4 transition-all duration-200 rounded-xl ${
+                            className={`flex gap-2 sm:gap-4 transition-all duration-200 rounded-xl ${
                               isDragging ? "opacity-20 scale-95" : ""
                             } ${isDropTarget ? "bg-primary-container/10" : ""}`}
                           >
+                            {/* Desktop: drag handle */}
                             <div
                               draggable
                               onDragStart={() => setStepDragIdx(i)}
                               onDragEnd={() => { setStepDragIdx(null); setStepOverIdx(null); }}
-                              className="flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 mt-5 rounded-md hover:bg-surface-container-high transition-colors group/handle self-start"
+                              className="hidden sm:flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 mt-5 rounded-md hover:bg-surface-container-high transition-colors group/handle self-start"
                               title="Sleep om te verplaatsen"
                             >
                               <span className="material-symbols-outlined text-base text-outline-variant/40 group-hover/handle:text-primary transition-colors" aria-hidden="true">drag_indicator</span>
                             </div>
+                            {/* Mobile: up/down buttons */}
+                            <div className="flex sm:hidden flex-col shrink-0 -ml-1 mt-4 self-start">
+                              <button type="button" disabled={i === 0} onClick={() => setInstructions(reorder(instructions, i, i - 1))} className="p-0.5 text-outline-variant/40 hover:text-primary disabled:opacity-20 transition-colors" aria-label="Omhoog">
+                                <span className="material-symbols-outlined text-base" aria-hidden="true">keyboard_arrow_up</span>
+                              </button>
+                              <button type="button" disabled={i === instructions.length - 1} onClick={() => setInstructions(reorder(instructions, i, i + 1))} className="p-0.5 text-outline-variant/40 hover:text-primary disabled:opacity-20 transition-colors" aria-label="Omlaag">
+                                <span className="material-symbols-outlined text-base" aria-hidden="true">keyboard_arrow_down</span>
+                              </button>
+                            </div>
                           {isSection ? (
                             <div className="flex-grow flex gap-2">
                               <input
-                                className="flex-grow bg-primary-container/20 border-none rounded-lg font-label text-sm font-bold py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20"
+                                className="flex-grow bg-primary-container/20 border-none rounded-lg font-label text-sm font-bold py-3 px-3 sm:px-4 outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="Sectietitel (bijv. Dag 1, Afwerking...)"
                                 type="text"
                                 value={step.slice(3)}
                                 onChange={(e) => updateInstruction(i, "## " + e.target.value)}
                               />
                               {instructions.length > 1 && (
-                                <button type="button" onClick={() => removeInstruction(i)} className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0" aria-label={`Sectie verwijderen`}>
+                                <button type="button" onClick={() => removeInstruction(i)} className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0" aria-label="Sectie verwijderen">
                                   <span className="material-symbols-outlined text-lg">close</span>
                                 </button>
                               )}
                             </div>
                           ) : (
                             <>
-                              <span className="font-heading text-primary-fixed-dim text-3xl italic opacity-50 shrink-0">
+                              <span className="font-heading text-primary-fixed-dim text-2xl sm:text-3xl italic opacity-50 shrink-0 mt-4 sm:mt-0">
                                 {String(currentStep).padStart(2, "0")}
                               </span>
                               <div className="flex-grow flex gap-2">
                                 <textarea
-                                  className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
+                                  className="w-full bg-surface-container-low border-none rounded-xl font-sans text-sm sm:text-base p-4 sm:p-6 focus:ring-2 focus:ring-primary/20 min-h-[3.5rem] leading-relaxed outline-none resize-none overflow-hidden"
                                   placeholder={currentStep === 1 ? "Beschrijf de eerste stap van de bereiding..." : "Volgende stappen..."}
                                   value={step}
                                   onChange={(e) => {
@@ -440,7 +460,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                                   aria-label={`Stap ${currentStep}`}
                                 />
                                 {instructions.length > 1 && (
-                                  <button type="button" onClick={() => removeInstruction(i)} className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0 self-start mt-6" aria-label={`Stap ${currentStep} verwijderen`}>
+                                  <button type="button" onClick={() => removeInstruction(i)} className="text-outline-variant/40 hover:text-error-lajoy transition-colors shrink-0 self-start mt-4 sm:mt-6" aria-label={`Stap ${currentStep} verwijderen`}>
                                     <span className="material-symbols-outlined text-lg">close</span>
                                   </button>
                                 )}
