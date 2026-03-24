@@ -10,6 +10,7 @@ import Link from "next/link";
 import type { Recipe } from "@/lib/types";
 import { categoryLabels } from "@/lib/types";
 import { isSectionHeader } from "@/lib/format-text";
+import { formatShoppingList, categorizeIngredients } from "@/lib/supermarket-sort";
 
 interface FridgeItem {
   id: string;
@@ -83,6 +84,7 @@ export default function FridgePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [fridgeSearch, setFridgeSearch] = useState("");
+  const [sortByAisle, setSortByAisle] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -303,7 +305,7 @@ export default function FridgePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left: Fridge Items */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28 space-y-5">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary" aria-hidden="true">kitchen</span>
@@ -388,23 +390,33 @@ export default function FridgePage() {
                 </div>
               ) : (
                 <div className="bg-surface-container-low rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 border-b border-outline-variant/15 flex items-center justify-between">
-                    <p className="font-label text-xs uppercase tracking-widest text-outline">
+                  <div className="px-4 py-3 border-b border-outline-variant/15 flex items-center justify-between gap-2">
+                    <p className="font-label text-xs uppercase tracking-widest text-outline shrink-0">
                       {fridgeItems.length} ingrediënt{fridgeItems.length !== 1 ? "en" : ""}
                     </p>
-                    <button
-                      onClick={async () => {
-                        if (!confirm("Alle ingrediënten verwijderen?")) return;
-                        for (const item of fridgeItems) {
-                          await supabase.from("fridge_items").delete().eq("id", item.id);
-                        }
-                        fetchData();
-                        toast.success("Koelkast leeggemaakt");
-                      }}
-                      className="font-label text-[10px] uppercase tracking-widest text-outline-variant hover:text-error-lajoy transition-colors"
-                    >
-                      Alles wissen
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSortByAisle(!sortByAisle)}
+                        className={`font-label text-[10px] uppercase tracking-widest flex items-center gap-1 transition-colors ${sortByAisle ? "text-primary" : "text-outline-variant hover:text-primary"}`}
+                        title={sortByAisle ? "Sorteer op toegevoegd" : "Sorteer op gangpad"}
+                      >
+                        <span className="material-symbols-outlined text-xs" aria-hidden="true">sort</span>
+                        {sortByAisle ? "Gangpad" : "Sorteer"}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Alle ingrediënten verwijderen?")) return;
+                          for (const item of fridgeItems) {
+                            await supabase.from("fridge_items").delete().eq("id", item.id);
+                          }
+                          fetchData();
+                          toast.success("Koelkast leeggemaakt");
+                        }}
+                        className="font-label text-[10px] uppercase tracking-widest text-outline-variant hover:text-error-lajoy transition-colors"
+                      >
+                        Wissen
+                      </button>
+                    </div>
                   </div>
 
                   {fridgeItems.length > 5 && (
@@ -424,11 +436,53 @@ export default function FridgePage() {
                   )}
 
                   <div className="max-h-[500px] overflow-y-auto">
-                    {fridgeItems
-                      .filter((item) =>
+                    {(() => {
+                      const filtered = fridgeItems.filter((item) =>
                         !fridgeSearch || item.name.toLowerCase().includes(fridgeSearch.toLowerCase())
-                      )
-                      .map((item, i, arr) => (
+                      );
+
+                      if (filtered.length === 0 && fridgeSearch) {
+                        return (
+                          <p className="px-4 py-4 text-center text-xs font-label text-outline-variant">
+                            Geen resultaten voor &ldquo;{fridgeSearch}&rdquo;
+                          </p>
+                        );
+                      }
+
+                      if (sortByAisle) {
+                        const categories = categorizeIngredients(filtered.map((i) => i.name));
+                        return categories.map((cat) => (
+                          <div key={cat.category}>
+                            <div className="px-4 py-2 bg-surface-container-high/30 border-b border-outline-variant/10">
+                              <span className="font-label text-[10px] uppercase tracking-widest text-primary font-bold">
+                                {cat.emoji} {cat.category}
+                              </span>
+                            </div>
+                            {cat.items.map((name) => {
+                              const item = filtered.find((fi) => fi.name === name);
+                              if (!item) return null;
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-3 px-4 py-3 group hover:bg-surface-container-high/50 transition-colors border-b border-outline-variant/10"
+                                >
+                                  <span className="material-symbols-outlined text-sm text-primary-fixed-dim" aria-hidden="true">check_circle</span>
+                                  <span className="flex-grow font-label text-sm sm:text-base text-on-surface truncate">{item.name}</span>
+                                  <button
+                                    onClick={() => removeItem(item.id)}
+                                    className="p-1 rounded-full hover:bg-error-container/50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
+                                    aria-label={`${item.name} verwijderen`}
+                                  >
+                                    <span className="material-symbols-outlined text-sm text-error-lajoy/70" aria-hidden="true">close</span>
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ));
+                      }
+
+                      return filtered.map((item, i, arr) => (
                         <div
                           key={item.id}
                           className={`flex items-center gap-3 px-4 py-3 group hover:bg-surface-container-high/50 transition-colors ${
@@ -445,14 +499,8 @@ export default function FridgePage() {
                             <span className="material-symbols-outlined text-sm text-error-lajoy/70" aria-hidden="true">close</span>
                           </button>
                         </div>
-                      ))}
-                    {fridgeSearch && fridgeItems.filter((item) =>
-                      item.name.toLowerCase().includes(fridgeSearch.toLowerCase())
-                    ).length === 0 && (
-                      <p className="px-4 py-4 text-center text-xs font-label text-outline-variant">
-                        Geen resultaten voor &ldquo;{fridgeSearch}&rdquo;
-                      </p>
-                    )}
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -460,7 +508,7 @@ export default function FridgePage() {
           </div>
 
           {/* Right: Recipe Matches */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-8">
             {fridgeItems.length === 0 ? (
               <div className="text-center py-16">
                 <span className="material-symbols-outlined text-6xl text-outline-variant/30 mb-4" aria-hidden="true">grocery</span>
@@ -569,7 +617,7 @@ export default function FridgePage() {
                         onClick={async () => {
                           const allMissing = new Set<string>();
                           almostThere.forEach(({ missing }) => missing.forEach((ing) => allMissing.add(ing)));
-                          const text = `Boodschappenlijst (${allMissing.size} items):\n\n${Array.from(allMissing).map((ing) => `- ${ing}`).join("\n")}`;
+                          const text = formatShoppingList(`Boodschappenlijst (${allMissing.size} items)`, Array.from(allMissing));
                           if (navigator.share) {
                             try { await navigator.share({ title: "Boodschappenlijst", text }); } catch { /* cancelled */ }
                           } else {
@@ -671,7 +719,7 @@ export default function FridgePage() {
                                   <div className="mt-4 pt-4 border-t border-outline-variant/10 flex items-center justify-between flex-wrap gap-3">
                                     <button
                                       onClick={async () => {
-                                        const text = `Boodschappenlijst voor "${recipe.title}":\n\n${missing.map((ing) => `- ${ing}`).join("\n")}`;
+                                        const text = formatShoppingList(`Boodschappenlijst voor "${recipe.title}"`, missing);
                                         if (navigator.share) {
                                           try { await navigator.share({ title: `Boodschappen: ${recipe.title}`, text }); } catch {}
                                         } else {
