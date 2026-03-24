@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import type { Recipe } from "@/lib/types";
 import { categoryLabels } from "@/lib/types";
 import { formatRichText, isSectionHeader, getSectionTitle } from "@/lib/format-text";
+import { CookingMode } from "@/components/cooking-mode";
 import Link from "next/link";
 
 export default function RecipeDetailPage({
@@ -21,6 +22,7 @@ export default function RecipeDetailPage({
   const [loading, setLoading] = useState(true);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
+  const [cookingMode, setCookingMode] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
@@ -121,6 +123,13 @@ export default function RecipeDetailPage({
                   Terug naar recepten
                 </Link>
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setCookingMode(true)}
+                    className="font-label text-xs uppercase tracking-[0.2em] text-primary flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden bg-primary-container/30 px-3 py-1.5 rounded-full"
+                  >
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">skillet</span>
+                    Kookmodus
+                  </button>
                   <button
                     onClick={() => window.print()}
                     className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2 hover:opacity-70 transition-opacity print:hidden"
@@ -378,6 +387,11 @@ export default function RecipeDetailPage({
           </a>
         </div>
       </footer>
+
+      {/* Cooking Mode Overlay */}
+      {cookingMode && (
+        <CookingMode recipe={recipe} onClose={() => setCookingMode(false)} />
+      )}
     </div>
   );
 }

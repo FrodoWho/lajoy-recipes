@@ -285,7 +285,13 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                 {/* Description */}
                 <section>
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">Beschrijving</label>
-                  <textarea className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-24 leading-relaxed outline-none" placeholder="Een korte beschrijving van je recept..." value={description} onChange={(e) => setDescription(e.target.value)} />
+                  <textarea
+                    className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
+                    placeholder="Een korte beschrijving van je recept..."
+                    value={description}
+                    onChange={(e) => { setDescription(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    ref={(el) => { if (el && description) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }}
+                  />
                 </section>
 
                 {/* Ingredients with drag & drop and section headers */}
@@ -302,22 +308,32 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                     </div>
                   </div>
                   <p className="font-label text-[10px] text-outline-variant mb-4">Gebruik **vet** en __onderstreept__ voor opmaak. Sleep items om te herordenen.</p>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {ingredients.map((ing, i) => {
                       const isSection = isSectionHeader(ing.name);
+                      const isDragging = ingDragIdx === i;
+                      const isDropTarget = ingOverIdx === i && ingDragIdx !== null && ingDragIdx !== i;
                       return (
-                        <div
-                          key={i}
-                          draggable
-                          onDragStart={() => setIngDragIdx(i)}
-                          onDragOver={(e) => { e.preventDefault(); setIngOverIdx(i); }}
-                          onDrop={() => { if (ingDragIdx !== null) setIngredients(reorder(ingredients, ingDragIdx, i)); setIngDragIdx(null); setIngOverIdx(null); }}
-                          onDragEnd={() => { setIngDragIdx(null); setIngOverIdx(null); }}
-                          className={`flex gap-3 items-center rounded-lg transition-all ${
-                            ingDragIdx === i ? "opacity-30" : ""
-                          } ${ingOverIdx === i && ingDragIdx !== i ? "border-t-2 border-primary" : "border-t-2 border-transparent"}`}
-                        >
-                          <span className="material-symbols-outlined text-sm text-outline-variant/40 cursor-grab active:cursor-grabbing shrink-0" aria-hidden="true">drag_indicator</span>
+                        <div key={i} className="relative">
+                          {isDropTarget && (
+                            <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 animate-pulse" />
+                          )}
+                          <div
+                            onDragOver={(e) => { e.preventDefault(); setIngOverIdx(i); }}
+                            onDrop={() => { if (ingDragIdx !== null) setIngredients(reorder(ingredients, ingDragIdx, i)); setIngDragIdx(null); setIngOverIdx(null); }}
+                            className={`flex gap-3 items-center rounded-lg transition-all duration-200 ${
+                              isDragging ? "opacity-20 scale-95" : ""
+                            } ${isDropTarget ? "bg-primary-container/10" : ""}`}
+                          >
+                            <div
+                              draggable
+                              onDragStart={() => setIngDragIdx(i)}
+                              onDragEnd={() => { setIngDragIdx(null); setIngOverIdx(null); }}
+                              className="flex items-center gap-0.5 shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 rounded-md hover:bg-surface-container-high transition-colors group/handle"
+                              title="Sleep om te verplaatsen"
+                            >
+                              <span className="material-symbols-outlined text-base text-outline-variant/40 group-hover/handle:text-primary transition-colors" aria-hidden="true">drag_indicator</span>
+                            </div>
                           {isSection ? (
                             <input
                               className="flex-grow bg-primary-container/20 border-none rounded-lg font-label text-sm font-bold py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20"
@@ -337,6 +353,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                               <span className="material-symbols-outlined text-lg">close</span>
                             </button>
                           )}
+                          </div>
                         </div>
                       );
                     })}
@@ -357,25 +374,35 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                     </div>
                   </div>
                   <p className="font-label text-[10px] text-outline-variant mb-6">Gebruik **vet** en __onderstreept__ voor opmaak. Sleep items om te herordenen.</p>
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {instructions.map((step, i) => {
                       const isSection = isSectionHeader(step);
                       if (!isSection) stepCounter++;
                       const currentStep = stepCounter;
+                      const isDragging = stepDragIdx === i;
+                      const isDropTarget = stepOverIdx === i && stepDragIdx !== null && stepDragIdx !== i;
 
                       return (
-                        <div
-                          key={i}
-                          draggable
-                          onDragStart={() => setStepDragIdx(i)}
-                          onDragOver={(e) => { e.preventDefault(); setStepOverIdx(i); }}
-                          onDrop={() => { if (stepDragIdx !== null) setInstructions(reorder(instructions, stepDragIdx, i)); setStepDragIdx(null); setStepOverIdx(null); }}
-                          onDragEnd={() => { setStepDragIdx(null); setStepOverIdx(null); }}
-                          className={`flex gap-4 transition-all ${
-                            stepDragIdx === i ? "opacity-30" : ""
-                          } ${stepOverIdx === i && stepDragIdx !== i ? "border-t-2 border-primary" : "border-t-2 border-transparent"}`}
-                        >
-                          <span className="material-symbols-outlined text-sm text-outline-variant/40 cursor-grab active:cursor-grabbing shrink-0 mt-6" aria-hidden="true">drag_indicator</span>
+                        <div key={i} className="relative">
+                          {isDropTarget && (
+                            <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 animate-pulse" />
+                          )}
+                          <div
+                            onDragOver={(e) => { e.preventDefault(); setStepOverIdx(i); }}
+                            onDrop={() => { if (stepDragIdx !== null) setInstructions(reorder(instructions, stepDragIdx, i)); setStepDragIdx(null); setStepOverIdx(null); }}
+                            className={`flex gap-4 transition-all duration-200 rounded-xl ${
+                              isDragging ? "opacity-20 scale-95" : ""
+                            } ${isDropTarget ? "bg-primary-container/10" : ""}`}
+                          >
+                            <div
+                              draggable
+                              onDragStart={() => setStepDragIdx(i)}
+                              onDragEnd={() => { setStepDragIdx(null); setStepOverIdx(null); }}
+                              className="flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 mt-5 rounded-md hover:bg-surface-container-high transition-colors group/handle self-start"
+                              title="Sleep om te verplaatsen"
+                            >
+                              <span className="material-symbols-outlined text-base text-outline-variant/40 group-hover/handle:text-primary transition-colors" aria-hidden="true">drag_indicator</span>
+                            </div>
                           {isSection ? (
                             <div className="flex-grow flex gap-2">
                               <input
@@ -398,10 +425,16 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                               </span>
                               <div className="flex-grow flex gap-2">
                                 <textarea
-                                  className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-32 leading-relaxed outline-none"
+                                  className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
                                   placeholder={currentStep === 1 ? "Beschrijf de eerste stap van de bereiding..." : "Volgende stappen..."}
                                   value={step}
-                                  onChange={(e) => updateInstruction(i, e.target.value)}
+                                  onChange={(e) => {
+                                    updateInstruction(i, e.target.value);
+                                    e.target.style.height = "auto";
+                                    e.target.style.height = e.target.scrollHeight + "px";
+                                  }}
+                                  onFocus={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                                  ref={(el) => { if (el && step) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }}
                                   aria-label={`Stap ${currentStep}`}
                                 />
                                 {instructions.length > 1 && (
@@ -412,6 +445,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                               </div>
                             </>
                           )}
+                          </div>
                         </div>
                       );
                     })}
@@ -421,7 +455,13 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                 {/* Notes */}
                 <section>
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline block mb-4">Notities</label>
-                  <textarea className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 h-24 leading-relaxed outline-none" placeholder="Tips, variaties, of verhalen over dit recept..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+                  <textarea
+                    className="w-full bg-surface-container-low border-none rounded-xl font-sans text-base p-6 focus:ring-2 focus:ring-primary/20 min-h-[4rem] leading-relaxed outline-none resize-none overflow-hidden"
+                    placeholder="Tips, variaties, of verhalen over dit recept..."
+                    value={notes}
+                    onChange={(e) => { setNotes(e.target.value); e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                    ref={(el) => { if (el && notes) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; } }}
+                  />
                 </section>
               </div>
             </div>
