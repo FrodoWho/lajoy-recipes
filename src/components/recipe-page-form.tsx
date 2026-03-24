@@ -55,9 +55,7 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ingDragIdx, setIngDragIdx] = useState<number | null>(null);
-  const [ingOverIdx, setIngOverIdx] = useState<number | null>(null);
   const [stepDragIdx, setStepDragIdx] = useState<number | null>(null);
-  const [stepOverIdx, setStepOverIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -314,24 +312,36 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                     {ingredients.map((ing, i) => {
                       const isSection = isSectionHeader(ing.name);
                       const isDragging = ingDragIdx === i;
-                      const isDropTarget = ingOverIdx === i && ingDragIdx !== null && ingDragIdx !== i;
                       return (
-                        <div key={i} className="relative">
-                          {isDropTarget && (
-                            <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 animate-pulse" />
-                          )}
+                        <div key={i}>
                           <div
-                            onDragOver={(e) => { e.preventDefault(); setIngOverIdx(i); }}
-                            onDrop={() => { if (ingDragIdx !== null) setIngredients(reorder(ingredients, ingDragIdx, i)); setIngDragIdx(null); setIngOverIdx(null); }}
-                            className={`flex gap-2 sm:gap-3 items-center rounded-lg transition-all duration-200 ${
-                              isDragging ? "opacity-20 scale-95" : ""
-                            } ${isDropTarget ? "bg-primary-container/10" : ""}`}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (ingDragIdx !== null && ingDragIdx !== i) {
+                                setIngredients(reorder(ingredients, ingDragIdx, i));
+                                setIngDragIdx(i);
+                              }
+                            }}
+                            className={`flex gap-2 sm:gap-3 items-center rounded-lg transition-all duration-150 ${
+                              isDragging ? "bg-primary-container/20 shadow-md ring-2 ring-primary/30 scale-[1.02] z-10 relative" : ""
+                            }`}
                           >
                             {/* Desktop: drag handle */}
                             <div
                               draggable
-                              onDragStart={() => setIngDragIdx(i)}
-                              onDragEnd={() => { setIngDragIdx(null); setIngOverIdx(null); }}
+                              onDragStart={(e) => {
+                                setIngDragIdx(i);
+                                e.dataTransfer.effectAllowed = "move";
+                                // Use a minimal transparent image so the browser ghost doesn't distract
+                                const ghost = document.createElement("div");
+                                ghost.style.opacity = "0";
+                                ghost.style.position = "absolute";
+                                ghost.style.top = "-1000px";
+                                document.body.appendChild(ghost);
+                                e.dataTransfer.setDragImage(ghost, 0, 0);
+                                requestAnimationFrame(() => ghost.remove());
+                              }}
+                              onDragEnd={() => setIngDragIdx(null)}
                               className="hidden sm:flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 rounded-md hover:bg-surface-container-high transition-colors group/handle"
                               title="Sleep om te verplaatsen"
                             >
@@ -392,25 +402,36 @@ export function RecipePageForm({ recipe }: RecipePageFormProps) {
                       if (!isSection) stepCounter++;
                       const currentStep = stepCounter;
                       const isDragging = stepDragIdx === i;
-                      const isDropTarget = stepOverIdx === i && stepDragIdx !== null && stepDragIdx !== i;
 
                       return (
-                        <div key={i} className="relative">
-                          {isDropTarget && (
-                            <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 animate-pulse" />
-                          )}
+                        <div key={i}>
                           <div
-                            onDragOver={(e) => { e.preventDefault(); setStepOverIdx(i); }}
-                            onDrop={() => { if (stepDragIdx !== null) setInstructions(reorder(instructions, stepDragIdx, i)); setStepDragIdx(null); setStepOverIdx(null); }}
-                            className={`flex gap-2 sm:gap-4 transition-all duration-200 rounded-xl ${
-                              isDragging ? "opacity-20 scale-95" : ""
-                            } ${isDropTarget ? "bg-primary-container/10" : ""}`}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (stepDragIdx !== null && stepDragIdx !== i) {
+                                setInstructions(reorder(instructions, stepDragIdx, i));
+                                setStepDragIdx(i);
+                              }
+                            }}
+                            className={`flex gap-2 sm:gap-4 transition-all duration-150 rounded-xl ${
+                              isDragging ? "bg-primary-container/20 shadow-md ring-2 ring-primary/30 scale-[1.02] z-10 relative" : ""
+                            }`}
                           >
                             {/* Desktop: drag handle */}
                             <div
                               draggable
-                              onDragStart={() => setStepDragIdx(i)}
-                              onDragEnd={() => { setStepDragIdx(null); setStepOverIdx(null); }}
+                              onDragStart={(e) => {
+                                setStepDragIdx(i);
+                                e.dataTransfer.effectAllowed = "move";
+                                const ghost = document.createElement("div");
+                                ghost.style.opacity = "0";
+                                ghost.style.position = "absolute";
+                                ghost.style.top = "-1000px";
+                                document.body.appendChild(ghost);
+                                e.dataTransfer.setDragImage(ghost, 0, 0);
+                                requestAnimationFrame(() => ghost.remove());
+                              }}
+                              onDragEnd={() => setStepDragIdx(null)}
                               className="hidden sm:flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1.5 -ml-1.5 mt-5 rounded-md hover:bg-surface-container-high transition-colors group/handle self-start"
                               title="Sleep om te verplaatsen"
                             >

@@ -75,6 +75,13 @@ function isDuplicateInFridge(newName: string, existingItems: FridgeItem[]): bool
   });
 }
 
+function reorder<T>(list: T[], from: number, to: number): T[] {
+  const result = [...list];
+  const [moved] = result.splice(from, 1);
+  result.splice(to, 0, moved);
+  return result;
+}
+
 export default function FridgePage() {
   const [fridgeItems, setFridgeItems] = useState<FridgeItem[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -85,6 +92,7 @@ export default function FridgePage() {
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [fridgeSearch, setFridgeSearch] = useState("");
   const [sortByAisle, setSortByAisle] = useState(false);
+  const [fridgeDragIdx, setFridgeDragIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -482,24 +490,54 @@ export default function FridgePage() {
                         ));
                       }
 
-                      return filtered.map((item, i, arr) => (
-                        <div
-                          key={item.id}
-                          className={`flex items-center gap-3 px-4 py-3 group hover:bg-surface-container-high/50 transition-colors ${
-                            i < arr.length - 1 ? "border-b border-outline-variant/10" : ""
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-sm text-primary-fixed-dim" aria-hidden="true">check_circle</span>
-                          <span className="flex-grow font-label text-sm sm:text-base text-on-surface truncate">{item.name}</span>
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="p-1 rounded-full hover:bg-error-container/50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
-                            aria-label={`${item.name} verwijderen`}
+                      return filtered.map((item, i, arr) => {
+                        const globalIdx = fridgeItems.indexOf(item);
+                        const isDragging = fridgeDragIdx === globalIdx;
+                        return (
+                          <div
+                            key={item.id}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              if (fridgeDragIdx !== null && fridgeDragIdx !== globalIdx) {
+                                setFridgeItems(reorder(fridgeItems, fridgeDragIdx, globalIdx));
+                                setFridgeDragIdx(globalIdx);
+                              }
+                            }}
+                            className={`flex items-center gap-1 sm:gap-3 px-2 sm:px-4 py-3 group transition-all duration-150 ${
+                              i < arr.length - 1 ? "border-b border-outline-variant/10" : ""
+                            } ${isDragging ? "bg-primary-container/20 shadow-md ring-2 ring-primary/30 scale-[1.02] z-10 relative rounded-lg" : "hover:bg-surface-container-high/50"}`}
                           >
-                            <span className="material-symbols-outlined text-sm text-error-lajoy/70" aria-hidden="true">close</span>
-                          </button>
-                        </div>
-                      ));
+                            <div
+                              draggable
+                              onDragStart={(e) => {
+                                setFridgeDragIdx(globalIdx);
+                                e.dataTransfer.effectAllowed = "move";
+                                const ghost = document.createElement("div");
+                                ghost.style.opacity = "0";
+                                ghost.style.position = "absolute";
+                                ghost.style.top = "-1000px";
+                                document.body.appendChild(ghost);
+                                e.dataTransfer.setDragImage(ghost, 0, 0);
+                                requestAnimationFrame(() => ghost.remove());
+                              }}
+                              onDragEnd={() => setFridgeDragIdx(null)}
+                              className="hidden sm:flex items-center shrink-0 cursor-grab active:cursor-grabbing select-none p-1 rounded-md hover:bg-surface-container-high transition-colors group/handle"
+                              title="Sleep om te verplaatsen"
+                            >
+                              <span className="material-symbols-outlined text-sm text-outline-variant/40 group-hover/handle:text-primary transition-colors" aria-hidden="true">drag_indicator</span>
+                            </div>
+                            <span className="material-symbols-outlined text-sm text-primary-fixed-dim" aria-hidden="true">check_circle</span>
+                            <span className="flex-grow font-label text-sm sm:text-base text-on-surface truncate">{item.name}</span>
+                            <button
+                              onClick={() => removeItem(item.id)}
+                              className="p-1 rounded-full hover:bg-error-container/50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
+                              aria-label={`${item.name} verwijderen`}
+                            >
+                              <span className="material-symbols-outlined text-sm text-error-lajoy/70" aria-hidden="true">close</span>
+                            </button>
+                          </div>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
